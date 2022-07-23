@@ -1,0 +1,5 @@
+type: edu
+custom_name: stage2
+files:
+- name: tests.py
+  visible: false
