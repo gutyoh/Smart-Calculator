@@ -3,3 +3,5 @@ custom_name: stage6
 files:
 - name: tests.py
   visible: false
+- name: temp/sol.py
+  visible: true
