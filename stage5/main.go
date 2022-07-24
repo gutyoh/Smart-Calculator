@@ -18,6 +18,8 @@ func main() {
 	for {
 		scanner := bufio.NewScanner(os.Stdin)
 		scanner.Scan()
+		l := scanner.Text()
+		fmt.Println(l)
 		line := strings.Split(scanner.Text(), " ")
 
 		if len(line[0]) == 0 {

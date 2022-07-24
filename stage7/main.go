@@ -55,7 +55,7 @@ func assign(line string) string {
 			value = strconv.Itoa(store[value])
 		}
 	}
-	
+
 	store[variable], _ = strconv.Atoi(value)
 	return ""
 }
@@ -111,14 +111,6 @@ func getTotal(line []string) int {
 		sum += val
 	}
 	return sum
-}
-
-func getValue(val string) int {
-	if isNumeric(val) {
-		return getSign(val) * getSign(val) * getSign(val)
-	} else {
-		return store[val]
-	}
 }
 
 func getExpression(line []string) []string {
