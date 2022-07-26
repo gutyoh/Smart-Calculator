@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 var store = make(map[string]int)
@@ -65,6 +66,16 @@ func isAlpha(s string) bool {
 		}
 	}
 	return true
+}
+
+func removeSpace(s string) string {
+	rr := make([]rune, 0, len(s))
+	for _, r := range s {
+		if !unicode.IsSpace(r) {
+			rr = append(rr, r)
+		}
+	}
+	return string(rr)
 }
 
 // End of Python mock-up functions
@@ -141,7 +152,10 @@ func getTotal(postfix []string) string {
 			stack = append(stack, strconv.Itoa(evalBinary(x, y, val)))
 		}
 	}
-	return stack[len(stack)-1]
+	if len(stack) > 0 {
+		return stack[len(stack)-1]
+	}
+	return ""
 }
 
 func evalBinary(a, b int, op string) int {
@@ -295,6 +309,10 @@ func main() {
 
 		var output string
 		var postfix []string
+
+		if startsWith(userInput, " ") {
+			userInput = removeSpace(userInput)
+		}
 
 		if len(userInput) > 0 {
 			if isCommand(split(userInput, " ")) {
