@@ -1,5 +1,12 @@
 package main
 
+/*
+[Smart Calculator - Stage 4/7: Add subtractions](https://hyperskill.org/projects/74/stages/412/implement)
+-------------------------------------------------------------------------------
+[Slice expressions](https://hyperskill.org/learn/topic/2207)
+[Functions](https://hyperskill.org/learn/topic/1750)
+*/
+
 import (
 	"bufio"
 	"fmt"
@@ -9,6 +16,7 @@ import (
 	"strings"
 )
 
+// isNumeric checks if all the characters in the string are numbers
 func isNumeric(s string) bool {
 	_, err := strconv.ParseFloat(s, 64)
 	return err == nil
