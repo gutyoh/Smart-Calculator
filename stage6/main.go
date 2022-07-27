@@ -1,20 +1,38 @@
 package main
 
+/*
+[Smart Calculator - Stage 6/7: Variables](https://hyperskill.org/projects/74/stages/414/implement)
+-------------------------------------------------------------------------------
+[Maps](https://hyperskill.org/learn/topic/1824)
+[Operations with maps](https://hyperskill.org/learn/topic/1850)
+[Introduction to Regexp package](https://hyperskill.org/learn/step/19844)
+[Structs](https://hyperskill.org/learn/topic/1891)
+[Methods](https://hyperskill.org/learn/topic/1928)
+[Public and private scopes](https://hyperskill.org/learn/topic/1894)
+[Anonymous functions] -- TODO!
+[Function decomposition](https://hyperskill.org/learn/topic/1893)
+*/
+
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
+// Calculator is a type that will handle a map 'memory' to store variables such as "a = 5"
+// And a string 'result' to store the result of the operation
 type Calculator struct {
-	stack  []string
-	result string
-	memory map[string]int
+	result    int
+	memory    map[string]int
+	message   string
+	infixExpr []string
 }
+
+// exprValidator checks if the infixExpr is valid and that it only contains '+' or '-'
+var exprValidator = true
 
 // mapContains checks if a map contains a specific element
 func mapContains(m map[string]int, key string) bool {
@@ -48,7 +66,7 @@ func checkAssignment(s string) bool {
 }
 
 // The assign function assigns a value to a variable and stores it in the calculator memory
-func (c Calculator) assign(line string) string {
+func (c Calculator) assign(line string) {
 	variable, value := func(s []string) (string, string) {
 		return s[0], s[1]
 	}(func() (elems []string) {
@@ -59,28 +77,32 @@ func (c Calculator) assign(line string) string {
 	}())
 
 	if !isAlpha(variable) {
-		return "Invalid identifier"
+		fmt.Println("Invalid identifier")
 	}
 
 	if !isNumeric(value) {
 		if !mapContains(c.memory, value) {
-			return "Invalid assignment"
+			fmt.Println("Invalid assignment")
 		} else {
 			value = strconv.Itoa(c.memory[value])
 		}
 	}
 
-	v, err := strconv.Atoi(value)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// Do not handle the error here, because the program will throw an error
+	// if we output a log with an additional line due to the failed assignment
+	v, _ := strconv.Atoi(value)
+
 	c.memory[variable] = v
-	return ""
+	return
 }
 
 func getCommand(line string) string {
 	if line == "/exit" {
-		return "Bye!"
+		fmt.Println("Bye!")
+		// I am using os.Exit() here, because for some reason I get the "program ran out of input" error
+		// In my Windows laptop, however this doesn't happen in my Mac.
+		// Instead of os.Exit() we can use return "Bye!" here, and it would work too, I guess!
+		os.Exit(0)
 	} else if line == "/help" {
 		return "The program calculates the sum of numbers"
 	}
@@ -94,35 +116,38 @@ func getSign(symbol string) int {
 		} else {
 			return -1
 		}
+	} else if strings.Contains(symbol, "*") || strings.Contains(symbol, "/") {
+		fmt.Println("Invalid expression")
+		return 0
 	}
 	return 1
 }
 
-func getTotal(line []string) int {
+// getTotal calculates the total result of the infix infixExpr
+func (c Calculator) getTotal(line []string) int {
 	sign := 1
 	var output []int
-	for idx, symbol := range line {
-		if idx%2 == 0 {
-			symb, _ := strconv.Atoi(symbol)
-			output = append(output, sign*symb)
+
+	for i, v := range line {
+		if i%2 == 0 {
+			token, _ := strconv.Atoi(v)
+			output = append(output, sign*token)
+		} else if getSign(v) == 0 {
+			exprValidator = false
+			break
 		} else {
-			sign = getSign(symbol)
+			sign = getSign(v)
 		}
 	}
 
-	var sum int
-	for _, val := range output {
-		sum += val
-	}
-	return sum
-}
+	// Remember to reset the result to properly calculate the next infix infixExpr
+	c.result = 0
 
-func (c Calculator) getValue(val string) int {
-	if isNumeric(val) {
-		return getSign(val) * getSign(val) * getSign(val)
-	} else {
-		return c.memory[val]
+	// Calculate the sum of the infix infixExpr and return the result
+	for _, v := range output {
+		c.result += v
 	}
+	return c.result
 }
 
 func (c Calculator) getExpression(line string) []string {
@@ -145,7 +170,7 @@ func (c Calculator) getExpression(line string) []string {
 				break
 			} else {
 				fmt.Println("Unknown variable")
-				break
+				return nil
 			}
 		}
 		parsedExp = append(parsedExp, token)
@@ -164,15 +189,25 @@ func main() {
 
 		if len(line) > 0 {
 			if checkCommand(line) {
-				c.result = getCommand(line)
+				c.message = getCommand(line)
 			} else if checkAssignment(line) {
-				c.result = c.assign(line)
+				c.assign(line)
+				continue
 			} else {
-				expression := c.getExpression(line)
-				c.result = strconv.Itoa(getTotal(expression))
+				// Since a command wasn't issued, reset the c.message variable
+				c.message = ""
+
+				// Get the parsed infixExpr and get the total
+				// infixExpr := c.getExpression(line)
+				c.infixExpr = c.getExpression(line)
+				c.result = c.getTotal(c.infixExpr)
 			}
 
-			if c.result != "" {
+			// If a command was issued, print the command message;
+			// Otherwise if 'c.infixExpr' is not nil print the calculated result
+			if c.message != "" {
+				fmt.Println(c.message)
+			} else if c.infixExpr != nil && exprValidator {
 				fmt.Println(c.result)
 			}
 		}
