@@ -3,38 +3,52 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
 
-var store = make(map[string]int)
+type Calculator struct {
+	stack  []string
+	result string
+	memory map[string]int
+}
 
+// mapContains checks if a map contains a specific element
 func mapContains(m map[string]int, key string) bool {
 	_, ok := m[key]
 	return ok
 }
 
-func startsWith(s, prefix string) bool {
-	return len(s) >= len(prefix) && s[0:len(prefix)] == prefix
+// isNumeric checks if all the characters in the string are numbers
+func isNumeric(s string) bool {
+	_, err := strconv.ParseFloat(s, 64)
+	return err == nil
 }
 
-func isCommand(s []string) bool {
-	if startsWith(s[0], "/") {
+// isAlpha checks if all the characters in the string are alphabet letters
+func isAlpha(s string) bool {
+	re := regexp.MustCompile("^[a-zA-Z]+$")
+	return re.MatchString(s)
+}
+
+// checkCommand checks if the line is a command (if it begins with "/")
+func checkCommand(s string) bool {
+	if strings.HasPrefix(s, "/") {
 		return true
 	}
 	return false
 }
 
-func isAssignment(s string) bool {
+// checkAssignment checks if the line is an assignment operation "a = 5"
+func checkAssignment(s string) bool {
 	return strings.Contains(s, "=")
 }
 
-func split(s, sep string) []string {
-	return strings.Split(s, sep)
-}
-
-func assign(line string) string {
+// The assign function assigns a value to a variable and stores it in the calculator memory
+func (c Calculator) assign(line string) string {
 	variable, value := func(s []string) (string, string) {
 		return s[0], s[1]
 	}(func() (elems []string) {
@@ -49,35 +63,25 @@ func assign(line string) string {
 	}
 
 	if !isNumeric(value) {
-		if !mapContains(store, value) {
+		if !mapContains(c.memory, value) {
 			return "Invalid assignment"
 		} else {
-			value = strconv.Itoa(store[value])
+			value = strconv.Itoa(c.memory[value])
 		}
 	}
-	
-	store[variable], _ = strconv.Atoi(value)
+
+	v, err := strconv.Atoi(value)
+	if err != nil {
+		log.Fatal(err)
+	}
+	c.memory[variable] = v
 	return ""
 }
 
-func isNumeric(s string) bool {
-	_, err := strconv.ParseFloat(s, 64)
-	return err == nil
-}
-
-func isAlpha(s string) bool {
-	for _, c := range s {
-		if (c < 'a' || c > 'z') && (c < 'A' || c > 'Z') {
-			return false
-		}
-	}
-	return true
-}
-
-func getCommand(s string) string {
-	if s == "/exit" {
+func getCommand(line string) string {
+	if line == "/exit" {
 		return "Bye!"
-	} else if s == "/help" {
+	} else if line == "/help" {
 		return "The program calculates the sum of numbers"
 	}
 	return "Unknown command"
@@ -113,50 +117,63 @@ func getTotal(line []string) int {
 	return sum
 }
 
-func getValue(val string) int {
+func (c Calculator) getValue(val string) int {
 	if isNumeric(val) {
 		return getSign(val) * getSign(val) * getSign(val)
 	} else {
-		return store[val]
+		return c.memory[val]
 	}
 }
 
-func getExpression(line []string) []string {
+func (c Calculator) getExpression(line string) []string {
 	var parsedExp []string
-	for _, val := range line {
-		if isAlpha(val) {
-			if mapContains(store, val) {
-				val = strconv.Itoa(store[val])
+	var tokens []string
+
+	if strings.Contains(line, " ") {
+		tokens = strings.Split(line, " ")
+	} else {
+		tokens = strings.Split(line, "")
+	}
+
+	for _, token := range tokens {
+		if isAlpha(token) {
+			if mapContains(c.memory, token) {
+				token = strconv.Itoa(c.memory[token])
+			} else if mapContains(c.memory, strings.Join(tokens, "")) {
+				token = strconv.Itoa(c.memory[strings.Join(tokens, "")])
+				parsedExp = append(parsedExp, token)
+				break
 			} else {
 				fmt.Println("Unknown variable")
 				break
 			}
 		}
-		parsedExp = append(parsedExp, val)
+		parsedExp = append(parsedExp, token)
 	}
 	return parsedExp
 }
 
 func main() {
+	var c Calculator
+	c.memory = make(map[string]int)
+
 	for {
 		scanner := bufio.NewScanner(os.Stdin)
 		scanner.Scan()
-		userInput := scanner.Text()
+		line := scanner.Text()
 
-		var output string
-
-		if len(userInput) > 0 {
-			if isCommand(split(userInput, " ")) {
-				output = getCommand(userInput)
-			} else if isAssignment(userInput) {
-				output = assign(userInput)
+		if len(line) > 0 {
+			if checkCommand(line) {
+				c.result = getCommand(line)
+			} else if checkAssignment(line) {
+				c.result = c.assign(line)
 			} else {
-				expression := getExpression(split(userInput, " "))
-				output = strconv.Itoa(getTotal(expression))
+				expression := c.getExpression(line)
+				c.result = strconv.Itoa(getTotal(expression))
 			}
 
-			if output != "" {
-				fmt.Println(output)
+			if c.result != "" {
+				fmt.Println(c.result)
 			}
 		}
 	}

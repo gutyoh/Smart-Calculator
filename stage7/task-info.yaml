@@ -5,3 +5,7 @@ files:
   visible: false
 - name: temp/sol.py
   visible: true
+- name: temp/main2.go
+  visible: true
+- name: main.go
+  visible: true

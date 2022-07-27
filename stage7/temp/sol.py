@@ -107,7 +107,7 @@ class Calculator:
                 else:
                     postfix.append(sym)
                     prev_sym = sym
-            elif sym in ['+', '-', '*', '/', '(', ')']:
+            elif sym in ['+', '-', '*', '/', '(', ')', '^']:
                 if prev_sym is None:
                     prev_sym = sym
                     stack.append(sym)

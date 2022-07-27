@@ -18,15 +18,18 @@ func main() {
 	for {
 		scanner := bufio.NewScanner(os.Stdin)
 		scanner.Scan()
-		l := scanner.Text()
-		fmt.Println(l)
 		line := strings.Split(scanner.Text(), " ")
 
 		if len(line[0]) == 0 {
 			continue
 		}
 
-		if line[0][0] == '/' {
+		if !isNumeric(line[0]) && !strings.Contains(line[0], "/") {
+			fmt.Println("Invalid expression")
+			continue
+		}
+
+		if strings.HasPrefix(line[0], "/") {
 			switch line[0] {
 			case "/exit":
 				fmt.Println("Bye!")
@@ -37,11 +40,6 @@ func main() {
 				fmt.Println("Unknown command")
 				continue
 			}
-		}
-
-		if !isNumeric(line[0]) {
-			fmt.Println("Invalid expression")
-			continue
 		}
 
 		if isNumeric(line[0]) {
