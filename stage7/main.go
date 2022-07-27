@@ -4,6 +4,7 @@ package main
 [Smart Calculator - Stage 7/7: I've got the power](https://hyperskill.org/projects/74/stages/415/implement)
 -------------------------------------------------------------------------------
 [Stack](https://hyperskill.org/learn/step/5252)
+[Type conversion and overflow](https://hyperskill.org/learn/step/18710)
 [Math package](https://hyperskill.org/learn/topic/2012)
 */
 
