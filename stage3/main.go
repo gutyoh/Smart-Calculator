@@ -1,5 +1,11 @@
 package main
 
+/*
+[Smart Calculator - Stage 3/7: Count them all](https://hyperskill.org/projects/74/stages/411/implement)
+-------------------------------------------------------------------------------
+[Working with slices](https://hyperskill.org/learn/topic/1701)
+*/
+
 import (
 	"bufio"
 	"fmt"
