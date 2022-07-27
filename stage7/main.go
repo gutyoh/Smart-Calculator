@@ -27,30 +27,66 @@ var operatorRank = map[string]int{
 	"^": 3,
 }
 
+<<<<<<< HEAD
 var symbols = []string{"+", "-", "*", "/", "(", ")", "^"}
 
 // mapContains checks if a map contains a specific element
+=======
+var symbols = []string{"+", "-", "*", "/", "(", ")"}
+
+// count returns the number of times the value x appears in a slice
+func count(s []string, x string) int {
+	var c int
+	for _, a := range s {
+		if a == x {
+			c++
+		}
+	}
+	return c
+}
+
+func split(s, sep string) []string {
+	return strings.Split(s, sep)
+}
+
+>>>>>>> 7d1c88c22d08beaa6158126db87ad066b62dd258
 func mapContains(m map[string]int, key string) bool {
 	_, ok := m[key]
 	return ok
 }
 
+<<<<<<< HEAD
 // sliceContains checks if a slice contains a specific element
 func sliceContains(s []string, element string) bool {
 	for _, x := range s {
 		if x == element {
+=======
+func sliceContains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+>>>>>>> 7d1c88c22d08beaa6158126db87ad066b62dd258
 			return true
 		}
 	}
 	return false
+<<<<<<< HEAD
 }
 
 // isNumeric checks if all the characters in the string are numbers
+=======
+}
+
+func startsWith(s, prefix string) bool {
+	return len(s) >= len(prefix) && s[0:len(prefix)] == prefix
+}
+
+>>>>>>> 7d1c88c22d08beaa6158126db87ad066b62dd258
 func isNumeric(s string) bool {
 	_, err := strconv.ParseFloat(s, 64)
 	return err == nil
 }
 
+<<<<<<< HEAD
 // isAlpha checks if all the characters in the string are alphabet letters
 func isAlpha(s string) bool {
 	re := regexp.MustCompile("^[a-zA-Z]+$")
@@ -73,6 +109,18 @@ func floatToString(f float64) string {
 
 // removeSpaces removes blank spaces from the line
 func removeSpaces(s string) string {
+=======
+func isAlpha(s string) bool {
+	for _, c := range s {
+		if (c < 'a' || c > 'z') && (c < 'A' || c > 'Z') {
+			return false
+		}
+	}
+	return true
+}
+
+func removeSpace(s string) string {
+>>>>>>> 7d1c88c22d08beaa6158126db87ad066b62dd258
 	rr := make([]rune, 0, len(s))
 	for _, r := range s {
 		if !unicode.IsSpace(r) {
@@ -82,6 +130,7 @@ func removeSpaces(s string) string {
 	return string(rr)
 }
 
+<<<<<<< HEAD
 // splitParenthesis separates tokens like "(3" or "1)" and returns a slice with the separated tokens
 func splitParenthesis(line []string) []string {
 	var newLine []string
@@ -115,6 +164,12 @@ func pop(alist *[]string) string {
 // checkCommand checks if the line is a command (if it begins with "/")
 func checkCommand(s string) bool {
 	if strings.HasPrefix(s, "/") {
+=======
+// End of Python mock-up functions
+
+func isCommand(s []string) bool {
+	if startsWith(s[0], "/") {
+>>>>>>> 7d1c88c22d08beaa6158126db87ad066b62dd258
 		return true
 	}
 	return false
@@ -125,8 +180,12 @@ func checkAssignment(s string) bool {
 	return strings.Contains(s, "=")
 }
 
+<<<<<<< HEAD
 // The assign function assigns a value to a variable and stores it in the calculator memory
 func (c Calculator) assign(line string) string {
+=======
+func assign(line string) string {
+>>>>>>> 7d1c88c22d08beaa6158126db87ad066b62dd258
 	variable, value := func(s []string) (string, string) {
 		return s[0], s[1]
 	}(func() (elems []string) {
@@ -197,6 +256,7 @@ func (c Calculator) getTotal() string {
 	return ""
 }
 
+<<<<<<< HEAD
 // evalSymbol evaluates the symbol and performs the operation accordingly
 func evalSymbol(a, b int, operator string) int {
 	switch operator {
@@ -244,6 +304,52 @@ func (c Calculator) getPostfix(line string) []string {
 				token = strconv.Itoa(c.memory[strings.Join(tokens, "")])
 				c.postfix = append(c.postfix, token)
 				break
+=======
+func getTotal(postfix []string) string {
+	var stack []string
+	for _, val := range postfix {
+		if isNumeric(val) {
+			stack = append(stack, val)
+		} else {
+			b := stack[len(stack)-1]
+			stack = stack[:len(stack)-1]
+			a := stack[len(stack)-1]
+			stack = stack[:len(stack)-1]
+			x, _ := strconv.Atoi(a)
+			y, _ := strconv.Atoi(b)
+			stack = append(stack, strconv.Itoa(evalBinary(x, y, val)))
+		}
+	}
+	if len(stack) > 0 {
+		return stack[len(stack)-1]
+	}
+	return ""
+}
+
+func evalBinary(a, b int, op string) int {
+	switch op {
+	case "+":
+		return a + b
+	case "-":
+		return a - b
+	case "*":
+		return a * b
+	case "/":
+		return a / b
+	case "^":
+		return int(float64(a) * float64(b))
+	default:
+		return 0
+	}
+}
+
+func getExpression(line []string) []string {
+	var parsedExp []string
+	for _, val := range line {
+		if isAlpha(val) {
+			if mapContains(store, val) {
+				val = strconv.Itoa(store[val])
+>>>>>>> 7d1c88c22d08beaa6158126db87ad066b62dd258
 			} else {
 				fmt.Println("Unknown variable")
 				break
@@ -339,6 +445,116 @@ func checkParenthesis(line string) bool {
 	return strings.Count(line, "(") != strings.Count(line, ")")
 }
 
+func getPostfix(line []string) []string {
+	var stack []string
+	prevSymbol := ""
+	postfix := []string{}
+
+	for _, sym := range line {
+		if sym == " " {
+			continue
+		} else if isAlpha(sym) {
+			if mapContains(store, sym) {
+				prevSymbol = sym
+				sym = strconv.Itoa(store[sym])
+				postfix = append(postfix, sym)
+			} else {
+				fmt.Println("Unknown variable")
+				break
+			}
+		} else if isNumeric(sym) {
+			if prevSymbol != "" && isNumeric(prevSymbol) {
+				// save the last element of 'postfix'
+				temp := postfix[len(postfix)-1]
+				// remove the last element of 'postfix'
+				postfix = postfix[:len(postfix)-1]
+				// append the last element of 'postfix' to 'postfix'
+				postfix = append(postfix, temp+sym)
+			} else {
+				postfix = append(postfix, sym)
+				prevSymbol = sym
+			}
+		} else if sliceContains(symbols, sym) {
+			if prevSymbol == "" {
+				prevSymbol = sym
+				// append symbol to stack
+				stack = append(stack, sym)
+				continue
+			}
+
+			if prevSymbol == sym {
+				if sym == "+" {
+					continue
+				} else if sym == "-" {
+					prevSymbol = "+"
+					// delete the last element of 'stack'
+					stack = stack[:len(stack)-1]
+					// append symbol to stack
+					stack = append(stack, sym)
+				} else if sym == "*" || sym == "/" {
+					fmt.Println("Invalid expression")
+					break
+				}
+			} else {
+				prevSymbol = sym
+			}
+			stack, postfix = stackOperator(stack, postfix, sym)
+		}
+	}
+	for {
+		if len(stack) == 0 {
+			break
+		}
+		postfix = append(postfix, stack[len(stack)-1])
+		stack = stack[:len(stack)-1]
+	}
+	return postfix
+}
+
+func stackOperator(stack, postfix []string, sym string) ([]string, []string) {
+	if len(stack) == 0 || stack[len(stack)-1] == "(" || sym == "(" {
+		stack = append(stack, sym)
+		return stack, postfix
+	}
+	if sym == ")" {
+		for {
+			if stack[len(stack)-1] == "(" {
+				stack = stack[:len(stack)-1]
+				break
+			}
+			postfix = append(postfix, stack[len(stack)-1])
+			stack = stack[:len(stack)-1]
+		}
+		return stack, postfix
+	}
+
+	if higherPrecedence(stack[len(stack)-1], sym) {
+		stack = append(stack, sym)
+	} else {
+		for {
+			if len(stack) > 0 && !higherPrecedence(stack[len(stack)-1], sym) {
+				postfix = append(postfix, stack[len(stack)-1])
+				stack = stack[:len(stack)-1]
+			} else {
+				break
+			}
+		}
+		stack = append(stack, sym)
+	}
+	return stack, postfix
+}
+
+func higherPrecedence(stackPop, sym string) bool {
+	if stackPop == "(" || operatorRank[sym] > operatorRank[stackPop] {
+		return true
+	}
+	return false
+}
+
+func checkParenthesis(line []string) bool {
+	return count(line, "(") != count(line, ")")
+}
+
 func main() {
 	var c Calculator
 	c.memory = make(map[string]int)
@@ -348,9 +564,17 @@ func main() {
 		scanner.Scan()
 		line := scanner.Text()
 
+<<<<<<< HEAD
 		// Check if the entered line has any preceding blank spaces
 		if strings.HasPrefix(line, " ") {
 			line = removeSpaces(line)
+=======
+		var output string
+		var postfix []string
+
+		if startsWith(userInput, " ") {
+			userInput = removeSpace(userInput)
+>>>>>>> 7d1c88c22d08beaa6158126db87ad066b62dd258
 		}
 
 		if len(line) > 0 {
@@ -359,6 +583,7 @@ func main() {
 			} else if checkAssignment(line) {
 				c.result = c.assign(line)
 			} else {
+<<<<<<< HEAD
 				if checkParenthesis(line) {
 					c.result = "Invalid expression"
 				} else {
@@ -367,6 +592,13 @@ func main() {
 					// Get the postfix expression and then calculate the result
 					c.postfix = c.getPostfix(strings.Join(expression, " "))
 					c.result = c.getTotal()
+=======
+				if checkParenthesis(split(userInput, " ")) {
+					output = "Invalid expression"
+				} else {
+					postfix = getPostfix(getExpression(split(userInput, " ")))
+					output = getTotal(postfix)
+>>>>>>> 7d1c88c22d08beaa6158126db87ad066b62dd258
 				}
 			}
 
