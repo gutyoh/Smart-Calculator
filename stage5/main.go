@@ -1,5 +1,11 @@
 package main
 
+/*
+[Smart Calculator - Stage 5/7: Error!](https://hyperskill.org/projects/74/stages/413/implement)
+-------------------------------------------------------------------------------
+[String search](https://hyperskill.org/learn/topic/2063)
+*/
+
 import (
 	"bufio"
 	"fmt"
@@ -9,6 +15,7 @@ import (
 	"strings"
 )
 
+// isNumeric checks if all the characters in the string are numbers
 func isNumeric(s string) bool {
 	_, err := strconv.ParseFloat(s, 64)
 	return err == nil
