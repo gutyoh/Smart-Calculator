@@ -1,5 +1,12 @@
 package main
 
+/*
+[Smart Calculator - Stage 7/7: I've got the power](https://hyperskill.org/projects/74/stages/415/implement)
+-------------------------------------------------------------------------------
+[Stack](https://hyperskill.org/learn/step/5252)
+[Math package](https://hyperskill.org/learn/topic/2012)
+*/
+
 import (
 	"bufio"
 	"fmt"
@@ -9,14 +16,15 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"unicode"
 )
 
 type Calculator struct {
-	stack   []string
-	postfix []string
-	result  string
-	memory  map[string]int
+	result      int
+	memory      map[string]int
+	message     string
+	infixExpr   []string
+	stack       []string
+	postfixExpr []string
 }
 
 var operatorRank = map[string]int{
@@ -57,29 +65,14 @@ func isAlpha(s string) bool {
 	return re.MatchString(s)
 }
 
-// stringToFloat converts a string to a float number
-func stringToFloat(a string) int {
+// FOR FUN ONLY TO HANDLE FLOAT INPUTS -- THIS CAN BE REMOVED FROM FINAL SOLUTION
+// floatStringToInt converts a "float string" like: "3.50" to an int: "3"
+func floatStringToInt(a string) int {
 	f, err := strconv.ParseFloat(a, 64)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return int(f)
-}
-
-// floatToString converts a float number to a string
-func floatToString(f float64) string {
-	return strconv.FormatFloat(f, 'f', -1, 64)
-}
-
-// removeSpaces removes blank spaces from the line
-func removeSpaces(s string) string {
-	rr := make([]rune, 0, len(s))
-	for _, r := range s {
-		if !unicode.IsSpace(r) {
-			rr = append(rr, r)
-		}
-	}
-	return string(rr)
 }
 
 // splitParenthesis separates tokens like "(3" or "1)" and returns a slice with the separated tokens
@@ -126,10 +119,10 @@ func checkAssignment(s string) bool {
 }
 
 // The assign function assigns a value to a variable and stores it in the calculator memory
-func (c Calculator) assign(line string) string {
+func (c Calculator) assign(line string) {
 	variable, value := func(s []string) (string, string) {
 		return s[0], s[1]
-	}(func() (elems []string) {
+	}(func() (elems []string) { // Usage of Anonymous function
 		for _, x := range strings.Split(line, "=") {
 			elems = append(elems, strings.TrimSpace(x))
 		}
@@ -137,46 +130,51 @@ func (c Calculator) assign(line string) string {
 	}())
 
 	if !isAlpha(variable) {
-		return "Invalid identifier"
+		fmt.Println("Invalid identifier")
 	}
 
 	if !isNumeric(value) {
 		if !mapContains(c.memory, value) {
-			return "Invalid assignment"
+			fmt.Println("Invalid assignment")
 		} else {
 			value = strconv.Itoa(c.memory[value])
 		}
 	}
 
-	v, err := strconv.Atoi(value)
-	if err != nil {
-		log.Fatal(err)
-	}
-	c.memory[variable] = v
+	// Do not handle the error here, because the program will throw an error
+	// if we output a log with an additional line due to the failed assignment
+	v, _ := strconv.Atoi(value)
 
-	return ""
+	c.memory[variable] = v
+	return
 }
 
 func getCommand(line string) string {
 	if line == "/exit" {
-		return "Bye!"
+		fmt.Println("Bye!")
+		// I am using os.Exit() here, because for some reason I get the "program ran out of input" error
+		// In my Windows laptop, however this doesn't happen in my Mac.
+		// Instead of os.Exit() we can use return "Bye!" here, and it would work too, I guess!
+		os.Exit(0)
 	} else if line == "/help" {
 		return "The program calculates the sum of numbers"
 	}
 	return "Unknown command"
 }
 
-// getTotal calculates the total result of the postfix expression
-func (c Calculator) getTotal() string {
-	for _, val := range c.postfix {
+// getTotal calculates the total result of the postfixExpr infixExpr
+func (c Calculator) getTotal() int {
+	for _, val := range c.postfixExpr {
 		if isNumeric(val) {
 			c.stack = append(c.stack, val)
 		} else {
 			b, a := pop(&c.stack), pop(&c.stack)
 
-			//if 'b' and 'a' are float strings, convert them to float numbers:
-			if stringToFloat(a) != 0 && stringToFloat(b) != 0 {
-				a, b = floatToString(float64(stringToFloat(a))), floatToString(float64(stringToFloat(b)))
+			// FOR FUN ONLY TO HANDLE FLOAT INPUTS -- THIS CAN BE REMOVED FROM FINAL SOLUTION
+			// Check if 'b' and 'a' are "float strings" like "3.50",
+			// Then round them down to the lowest integer value, and then convert them back to strings
+			if floatStringToInt(a) != 0 && floatStringToInt(b) != 0 {
+				a, b = strconv.Itoa(floatStringToInt(a)), strconv.Itoa(floatStringToInt(b))
 			}
 
 			// Finally, convert 'a' and 'b' to int type:
@@ -191,10 +189,12 @@ func (c Calculator) getTotal() string {
 			c.stack = append(c.stack, strconv.Itoa(evalSymbol(x, y, val)))
 		}
 	}
+
 	if len(c.stack) > 0 {
-		return c.stack[len(c.stack)-1]
+		x, _ := strconv.Atoi(pop(&c.stack))
+		return x
 	}
-	return ""
+	return 0
 }
 
 // evalSymbol evaluates the symbol and performs the operation accordingly
@@ -215,7 +215,7 @@ func evalSymbol(a, b int, operator string) int {
 	}
 }
 
-// getPostfix converts the infix expression to postfix
+// getPostfix converts the infix infixExpr to postfixExpr
 func (c Calculator) getPostfix(line string) []string {
 	var prevSym string
 	var tokens []string
@@ -238,21 +238,21 @@ func (c Calculator) getPostfix(line string) []string {
 			if mapContains(c.memory, token) {
 				prevSym = token
 				token = strconv.Itoa(c.memory[token])
-				c.postfix = append(c.postfix, token)
+				c.postfixExpr = append(c.postfixExpr, token)
 			} else if mapContains(c.memory, strings.Join(tokens, "")) {
 				prevSym = strings.Join(tokens, "")
 				token = strconv.Itoa(c.memory[strings.Join(tokens, "")])
-				c.postfix = append(c.postfix, token)
+				c.postfixExpr = append(c.postfixExpr, token)
 				break
 			} else {
 				fmt.Println("Unknown variable")
-				break
+				return nil
 			}
 		} else if isNumeric(token) {
 			if prevSym != "" && isNumeric(prevSym) {
-				c.postfix = append(c.postfix, pop(&c.postfix)+token)
+				c.postfixExpr = append(c.postfixExpr, pop(&c.postfixExpr)+token)
 			} else {
-				c.postfix = append(c.postfix, token)
+				c.postfixExpr = append(c.postfixExpr, token)
 				prevSym = token
 			}
 		} else if sliceContains(symbols, token) {
@@ -280,7 +280,7 @@ func (c Calculator) getPostfix(line string) []string {
 			} else {
 				prevSym = token
 			}
-			c.stack, c.postfix = c.stackOperator(token)
+			c.stack, c.postfixExpr = c.stackOperator(token)
 		}
 	}
 
@@ -288,16 +288,16 @@ func (c Calculator) getPostfix(line string) []string {
 		if len(c.stack) == 0 {
 			break
 		}
-		c.postfix = append(c.postfix, pop(&c.stack))
+		c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
 	}
-	return c.postfix
+	return c.postfixExpr
 }
 
 // stackOperator performs the operation on the stack
 func (c Calculator) stackOperator(token string) ([]string, []string) {
 	if len(c.stack) == 0 || c.stack[len(c.stack)-1] == "(" || token == "(" {
 		c.stack = append(c.stack, token)
-		return c.stack, c.postfix
+		return c.stack, c.postfixExpr
 	}
 
 	if token == ")" {
@@ -306,9 +306,9 @@ func (c Calculator) stackOperator(token string) ([]string, []string) {
 				c.stack = c.stack[:len(c.stack)-1]
 				break
 			}
-			c.postfix = append(c.postfix, pop(&c.stack))
+			c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
 		}
-		return c.stack, c.postfix
+		return c.stack, c.postfixExpr
 	}
 
 	if higherPrecedence(c.stack[len(c.stack)-1], token) {
@@ -316,14 +316,14 @@ func (c Calculator) stackOperator(token string) ([]string, []string) {
 	} else {
 		for {
 			if len(c.stack) > 0 && !higherPrecedence(c.stack[len(c.stack)-1], token) {
-				c.postfix = append(c.postfix, pop(&c.stack))
+				c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
 			} else {
 				break
 			}
 		}
 		c.stack = append(c.stack, token)
 	}
-	return c.stack, c.postfix
+	return c.stack, c.postfixExpr
 }
 
 // higherPrecedence returns true if the first symbol has higher precedence than the second
@@ -334,7 +334,7 @@ func higherPrecedence(stackPop, token string) bool {
 	return false
 }
 
-// checkParentheses checks if there are the same amount of parenthesis in the expression
+// checkParentheses checks if there are the same amount of parenthesis in the infixExpr
 func checkParenthesis(line string) bool {
 	return strings.Count(line, "(") != strings.Count(line, ")")
 }
@@ -350,27 +350,40 @@ func main() {
 
 		// Check if the entered line has any preceding blank spaces
 		if strings.HasPrefix(line, " ") {
-			line = removeSpaces(line)
+			line = strings.TrimSpace(line)
 		}
 
 		if len(line) > 0 {
 			if checkCommand(line) {
-				c.result = getCommand(line)
+				c.message = getCommand(line)
 			} else if checkAssignment(line) {
-				c.result = c.assign(line)
+				c.assign(line)
+				continue
 			} else {
 				if checkParenthesis(line) {
-					c.result = "Invalid expression"
+					c.message = "Invalid expression"
 				} else {
+					// Since a command wasn't issued, reset the c.message variable
+					c.message = ""
+
 					// Use splitParenthesis to split any tokens like "(3" or "1)"
-					expression := splitParenthesis(strings.Split(line, " "))
-					// Get the postfix expression and then calculate the result
-					c.postfix = c.getPostfix(strings.Join(expression, " "))
+					if strings.Contains(line, " ") {
+						c.infixExpr = splitParenthesis(strings.Split(line, " "))
+					} else {
+						c.infixExpr = splitParenthesis(strings.Split(line, ""))
+					}
+
+					// Get the postfixExpr and then calculate the result
+					c.postfixExpr = c.getPostfix(strings.Join(c.infixExpr, " "))
 					c.result = c.getTotal()
 				}
 			}
 
-			if c.result != "" {
+			// If a command was issued, print the command message;
+			// Otherwise if 'c.postfixExpr' is not nil print the calculated result
+			if c.message != "" {
+				fmt.Println(c.message)
+			} else if c.postfixExpr != nil {
 				fmt.Println(c.result)
 			}
 		}
