@@ -153,9 +153,6 @@ func (c Calculator) assign(line string) {
 func getCommand(line string) string {
 	if line == "/exit" {
 		fmt.Println("Bye!")
-		// I am using os.Exit() here, because for some reason I get the "program ran out of input" error
-		// In my Windows laptop, however this doesn't happen in my Mac.
-		// Instead of os.Exit() we can use return "Bye!" here, and it would work too, I guess!
 		os.Exit(0)
 	} else if line == "/help" {
 		return "The program calculates the sum of numbers"
@@ -165,29 +162,44 @@ func getCommand(line string) string {
 
 // getTotal calculates the total result of the postfixExpr infixExpr
 func (c Calculator) getTotal() int {
-	for _, val := range c.postfixExpr {
+	var a, b string
+	for i, val := range c.postfixExpr {
 		if isNumeric(val) {
 			c.stack = append(c.stack, val)
 		} else {
-			b, a := pop(&c.stack), pop(&c.stack)
+			if len(c.stack) == 1 {
+				b = pop(&c.stack)
+				x, _ := strconv.Atoi(b)
+				// TODO FIX THIS LOGIC
+				if i == len(c.postfixExpr)-1 && val == "-" && x <= 0 {
+					return x
+				} else if i == len(c.postfixExpr)-1 && val == "+" {
+					return -x
+				} else if val == "-" {
+					c.stack = append(c.stack, strconv.Itoa(evalSymbol(0, x, val)))
+				} else {
+					c.stack = append(c.stack, strconv.Itoa(evalSymbol(x, 0, val)))
+				}
+			} else if len(c.stack) > 1 {
+				b, a = pop(&c.stack), pop(&c.stack)
+				//// FOR FUN ONLY TO HANDLE FLOAT INPUTS -- THIS CAN BE REMOVED FROM FINAL SOLUTION
+				//// Check if 'b' and 'a' are "float strings" like "3.50",
+				//// Then round them down to the lowest integer value, and then convert them back to strings
+				//if floatStringToInt(a) != 0 && floatStringToInt(b) != 0 {
+				//	a, b = strconv.Itoa(floatStringToInt(a)), strconv.Itoa(floatStringToInt(b))
+				//}
 
-			// FOR FUN ONLY TO HANDLE FLOAT INPUTS -- THIS CAN BE REMOVED FROM FINAL SOLUTION
-			// Check if 'b' and 'a' are "float strings" like "3.50",
-			// Then round them down to the lowest integer value, and then convert them back to strings
-			if floatStringToInt(a) != 0 && floatStringToInt(b) != 0 {
-				a, b = strconv.Itoa(floatStringToInt(a)), strconv.Itoa(floatStringToInt(b))
+				// Finally, convert 'a' and 'b' to int type:
+				x, err := strconv.Atoi(a)
+				if err != nil {
+					log.Fatal(err)
+				}
+				y, err := strconv.Atoi(b)
+				if err != nil {
+					log.Fatal(err)
+				}
+				c.stack = append(c.stack, strconv.Itoa(evalSymbol(x, y, val)))
 			}
-
-			// Finally, convert 'a' and 'b' to int type:
-			x, err := strconv.Atoi(a)
-			if err != nil {
-				log.Fatal(err)
-			}
-			y, err := strconv.Atoi(b)
-			if err != nil {
-				log.Fatal(err)
-			}
-			c.stack = append(c.stack, strconv.Itoa(evalSymbol(x, y, val)))
 		}
 	}
 
@@ -221,13 +233,64 @@ func (c Calculator) getPostfix(line string) []string {
 	var prevSym string
 	var tokens []string
 
+	var varName []string
+	var namedVar string
+
 	if strings.Contains(line, " ") {
 		tokens = strings.Split(line, " ")
 	} else {
 		tokens = strings.Split(line, "")
 	}
 
-	for _, token := range tokens {
+	for i, token := range tokens {
+		if token == "." {
+			fmt.Println("Invalid expression")
+			return nil
+		}
+
+		if isAlpha(token) && token != "/" && token != "*" && token != "^" && token != "-" && token != "+" &&
+			token != "=" && token != "(" && token != ")" {
+			varName = append(varName, token)
+			// if we are at the last element of the loop
+			if i == len(tokens)-1 {
+				namedVar = strings.Join(varName, "")
+				if !mapContains(c.memory, namedVar) {
+					// fmt.Println("Invalid identifier")
+					fmt.Println("Unknown expression")
+					return nil
+				}
+				c.postfixExpr = append(c.postfixExpr, strconv.Itoa(c.memory[namedVar]))
+				break
+			}
+			if tokens[i+1] == "+" || tokens[i+1] == "-" || tokens[i+1] == "*" || tokens[i+1] == "/" || tokens[i+1] == "^" {
+				namedVar = strings.Join(varName, "")
+				if !mapContains(c.memory, namedVar) {
+					// fmt.Println("Invalid identifier")
+					fmt.Println("Unknown expression")
+					return nil
+				}
+				c.postfixExpr = append(c.postfixExpr, strconv.Itoa(c.memory[namedVar]))
+				varName = []string{}
+			}
+			continue
+		}
+		namedVar = strings.Join(varName, "")
+
+		if len(namedVar) == 1 {
+			c.postfixExpr = append(c.postfixExpr, strconv.Itoa(c.memory[namedVar]))
+			varName = []string{}
+		}
+
+		if namedVar != "" && len(namedVar) > 1 {
+			if !mapContains(c.memory, namedVar) {
+				fmt.Println("Invalid identifier")
+				return nil
+			}
+			c.postfixExpr = append(c.postfixExpr, strconv.Itoa(c.memory[namedVar]))
+			// tokens = tokens[:len(tokens)-len(varName)]
+			varName = []string{} // reset varName
+		}
+
 		if repeatedSymbol(token) {
 			fmt.Println("Invalid expression")
 			break
@@ -257,7 +320,7 @@ func (c Calculator) getPostfix(line string) []string {
 				prevSym = token
 			}
 		} else if sliceContains(symbols, token) {
-			if prevSym == "" {
+			if prevSym == "" || prevSym == "+" {
 				prevSym = token
 				c.stack = append(c.stack, token)
 				continue
@@ -270,13 +333,14 @@ func (c Calculator) getPostfix(line string) []string {
 				case "-":
 					prevSym = "+"
 					pop(&c.stack)
-					c.stack = append(c.stack, prevSym)
+					// c.stack = append(c.stack, prevSym)
+					c.stack = append(c.stack, token)
 				case "*":
 					fmt.Println("Invalid expression")
-					break
+					return nil
 				case "/":
 					fmt.Println("Invalid expression")
-					break
+					return nil
 				}
 			} else {
 				prevSym = token
@@ -375,8 +439,18 @@ func main() {
 					}
 
 					// Get the postfixExpr and then calculate the result
-					c.postfixExpr = c.getPostfix(strings.Join(c.infixExpr, " "))
+					joinedExpr := strings.Join(c.infixExpr, "")
+					c.postfixExpr = c.getPostfix(joinedExpr)
 					c.result = c.getTotal()
+
+					//if len(c.postfixExpr) == 2 && c.postfixExpr[len(c.postfixExpr)-1] == "-" {
+					//	c.result = c.getTotal()
+					//} else if len(c.postfixExpr) > 2 && c.postfixExpr[len(c.postfixExpr)-1] == "-" &&
+					//	c.postfixExpr[len(c.postfixExpr)-2] != "-" {
+					//	c.result = -c.getTotal()
+					//} else {
+					//	c.result = c.getTotal()
+					//}
 				}
 			}
 
@@ -386,6 +460,7 @@ func main() {
 				fmt.Println(c.message)
 			} else if c.postfixExpr != nil {
 				fmt.Println(c.result)
+				c.postfixExpr = nil // Reset the postfixExpr
 			}
 		}
 	}

@@ -10,50 +10,76 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 // isNumeric checks if all the characters in the string are numbers
 func isNumeric(s string) bool {
-	_, err := strconv.ParseFloat(s, 64)
-	return err == nil
+	if len(s) == 1 {
+		return unicode.IsDigit(rune(s[0]))
+	} else {
+		_, err := strconv.ParseFloat(s, 64)
+		return err == nil
+	}
 }
 
 func main() {
+	var tokens []string
+	var operator string
+	var number string
+	var expression []string
+
 	for {
 		scanner := bufio.NewScanner(os.Stdin)
 		scanner.Scan()
-		line := strings.Split(scanner.Text(), " ")
+		line := scanner.Text()
 
-		switch {
-		case len(line[0]) == 0:
+		if line == "" {
 			continue
-		case line[0] == "/exit":
+		} else if line == "/exit" {
 			fmt.Println("Bye!")
-			break
-		case line[0] == "/help":
+			return
+		} else if line == "/help" {
 			fmt.Println("The program calculates the sum of numbers")
-		default:
-			total, sign := 0, 1
-			for _, num := range line {
-				if isNumeric(num) || (num[0] == '-' && isNumeric(num[1:])) {
-					n, err := strconv.Atoi(num)
-					if err != nil {
-						log.Fatal(err)
+		} else {
+			if strings.Contains(line, " ") {
+				tokens = strings.Split(line, " ")
+				// TODO
+				// Una expresion como --9 +++ 10 -- 8 queda como:
+				// [--9, +++, 10, --, 8] y debe quedar como [--, 9, +++, 10, --, 8]
+
+				fmt.Println(tokens)
+				continue
+			} else {
+				tokens = strings.Split(line, "")
+				for _, token := range tokens {
+					if token == "+" || token == "-" {
+						operator += token
 					}
-					total, sign = total+n*sign, 1
-				} else {
-					for _, c := range num {
-						if c == '-' {
-							sign *= -1
-						}
+
+					if isNumeric(token) && operator != "" {
+						expression = append(expression, number)
+						expression = append(expression, operator)
+						operator, number = "", ""
+					}
+
+					if isNumeric(token) {
+						number += token
 					}
 				}
+				// append last number
+				expression = append(expression, number)
+
+				// check if the first element of expression is ""
+				if expression[0] == "" {
+					expression = expression[1:]
+				}
 			}
-			fmt.Println(total)
+
+			fmt.Println(expression)
 		}
 	}
 }

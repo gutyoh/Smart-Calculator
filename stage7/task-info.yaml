@@ -3,9 +3,5 @@ custom_name: stage7
 files:
 - name: tests.py
   visible: false
-- name: temp/sol.py
-  visible: true
-- name: temp/main2.go
-  visible: true
 - name: main.go
   visible: true

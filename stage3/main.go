@@ -21,13 +21,13 @@ func main() {
 		scanner.Scan()
 		line := strings.Split(scanner.Text(), " ")
 
-		switch {
-		case len(line[0]) == 0:
+		switch line[0] {
+		case "":
 			continue
-		case line[0] == "/exit":
+		case "/exit":
 			fmt.Println("Bye!")
-			break
-		case line[0] == "/help":
+			return
+		case "/help":
 			fmt.Println("The program calculates the sum of numbers")
 		default:
 			total := 0
