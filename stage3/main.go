@@ -19,19 +19,22 @@ func main() {
 	for {
 		scanner := bufio.NewScanner(os.Stdin)
 		scanner.Scan()
-		line := strings.Split(scanner.Text(), " ")
+		line := scanner.Text()
 
-		switch line[0] {
-		case "":
+		if line == "" {
 			continue
-		case "/exit":
+		} else if line == "/exit" {
 			fmt.Println("Bye!")
 			return
-		case "/help":
+		} else if line == "/help" {
 			fmt.Println("The program calculates the sum of numbers")
-		default:
+		} else if strings.HasPrefix(line, "/") || strings.Contains(line, "=") {
+			// If the expression is any other command or a wrong command like "/ exit", then continue:
+			continue
+		} else {
 			total := 0
-			for _, num := range line {
+			tokens := strings.Split(line, " ")
+			for _, num := range tokens {
 				n, err := strconv.Atoi(num)
 				if err != nil {
 					log.Fatal(err)
@@ -40,5 +43,25 @@ func main() {
 			}
 			fmt.Println(total)
 		}
+
+		//switch line[0] {
+		//case "":
+		//	continue
+		//case "/exit":
+		//	fmt.Println("Bye!")
+		//	return
+		//case "/help":
+		//	fmt.Println("The program calculates the sum of numbers")
+		//default:
+		//	total := 0
+		//	for _, num := range line {
+		//		n, err := strconv.Atoi(num)
+		//		if err != nil {
+		//			log.Fatal(err)
+		//		}
+		//		total += n
+		//	}
+		//	fmt.Println(total)
+		//}
 	}
 }

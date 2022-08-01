@@ -10,7 +10,6 @@ package main
 [Methods](https://hyperskill.org/learn/topic/1928)
 [Public and private scopes](https://hyperskill.org/learn/topic/1894)
 [Anonymous functions] -- TODO!
-[Function decomposition](https://hyperskill.org/learn/topic/1893)
 */
 
 import (

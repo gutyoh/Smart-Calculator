@@ -22,27 +22,36 @@ import (
 )
 
 func main() {
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		if scanner.Text() == "/exit" {
-			fmt.Println("Bye!")
-			break
-		}
-		line := strings.Split(scanner.Text(), " ")
+	for {
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		line := scanner.Text()
 
-		if len(line) > 1 {
-			x, _ := strconv.Atoi(line[0])
-			y, _ := strconv.Atoi(line[1])
-			fmt.Println(x + y)
-		} else if line[0] == "" {
+		if line == "" {
 			continue
+		} else if line == "/exit" {
+			fmt.Println("Bye!")
+			return
 		} else {
-			x, err := strconv.Atoi(line[0])
-			if err != nil {
-				log.Fatal(err)
+			tokens := strings.Split(line, " ")
+			if len(tokens) > 1 {
+				x, err := strconv.Atoi(tokens[0])
+				if err != nil {
+					log.Fatal(err)
+				}
+				y, err := strconv.Atoi(tokens[1])
+				if err != nil {
+					log.Fatal(err)
+				}
+				fmt.Println(x + y)
+			} else {
+				x, err := strconv.Atoi(tokens[0])
+				if err != nil {
+					log.Fatal(err)
+				}
+				y := 0
+				fmt.Println(x + y)
 			}
-			y := 0
-			fmt.Println(x + y)
 		}
 	}
 }
