@@ -230,11 +230,8 @@ func evalSymbol(a, b int, operator string) int {
 
 // getPostfix converts the infix infixExpr to postfixExpr
 func (c Calculator) getPostfix(line string) []string {
-	var prevSym string
+	var prevSym, temp string
 	var tokens []string
-
-	var varName []string
-	var namedVar string
 
 	if strings.Contains(line, " ") {
 		tokens = strings.Split(line, " ")
@@ -243,54 +240,6 @@ func (c Calculator) getPostfix(line string) []string {
 	}
 
 	for i, token := range tokens {
-		if token == "." {
-			fmt.Println("Invalid expression")
-			return nil
-		}
-
-		if isAlpha(token) && token != "/" && token != "*" && token != "^" && token != "-" && token != "+" &&
-			token != "=" && token != "(" && token != ")" {
-			varName = append(varName, token)
-			// if we are at the last element of the loop
-			if i == len(tokens)-1 {
-				namedVar = strings.Join(varName, "")
-				if !mapContains(c.memory, namedVar) {
-					// fmt.Println("Invalid identifier")
-					fmt.Println("Unknown expression")
-					return nil
-				}
-				c.postfixExpr = append(c.postfixExpr, strconv.Itoa(c.memory[namedVar]))
-				break
-			}
-			if tokens[i+1] == "+" || tokens[i+1] == "-" || tokens[i+1] == "*" || tokens[i+1] == "/" || tokens[i+1] == "^" {
-				namedVar = strings.Join(varName, "")
-				if !mapContains(c.memory, namedVar) {
-					// fmt.Println("Invalid identifier")
-					fmt.Println("Unknown expression")
-					return nil
-				}
-				c.postfixExpr = append(c.postfixExpr, strconv.Itoa(c.memory[namedVar]))
-				varName = []string{}
-			}
-			continue
-		}
-		namedVar = strings.Join(varName, "")
-
-		if len(namedVar) == 1 {
-			c.postfixExpr = append(c.postfixExpr, strconv.Itoa(c.memory[namedVar]))
-			varName = []string{}
-		}
-
-		if namedVar != "" && len(namedVar) > 1 {
-			if !mapContains(c.memory, namedVar) {
-				fmt.Println("Invalid identifier")
-				return nil
-			}
-			c.postfixExpr = append(c.postfixExpr, strconv.Itoa(c.memory[namedVar]))
-			// tokens = tokens[:len(tokens)-len(varName)]
-			varName = []string{} // reset varName
-		}
-
 		if repeatedSymbol(token) {
 			fmt.Println("Invalid expression")
 			break
@@ -299,6 +248,8 @@ func (c Calculator) getPostfix(line string) []string {
 		if token == " " {
 			continue
 		} else if isAlpha(token) {
+			// TODO add the logic to properly check long named variables like 'test'
+			// The code currently only works for single letter variables like 'a' or 'b'
 			if mapContains(c.memory, token) {
 				prevSym = token
 				token = strconv.Itoa(c.memory[token])
@@ -313,14 +264,21 @@ func (c Calculator) getPostfix(line string) []string {
 				return nil
 			}
 		} else if isNumeric(token) {
-			if prevSym != "" && isNumeric(prevSym) {
+			if len(c.stack) > 1 && prevSym != "" && isNumeric(token) {
+				c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
+				temp = token
+			} else if prevSym != "" && isNumeric(prevSym) {
 				c.postfixExpr = append(c.postfixExpr, pop(&c.postfixExpr)+token)
 			} else {
-				c.postfixExpr = append(c.postfixExpr, token)
+				if sliceContains(c.stack, "-") && i == 1 {
+					c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
+				}
+				c.postfixExpr = append(c.postfixExpr, temp+token)
 				prevSym = token
+				temp = ""
 			}
 		} else if sliceContains(symbols, token) {
-			if prevSym == "" || prevSym == "+" {
+			if prevSym == "" {
 				prevSym = token
 				c.stack = append(c.stack, token)
 				continue
@@ -329,6 +287,15 @@ func (c Calculator) getPostfix(line string) []string {
 			if prevSym == token {
 				switch token {
 				case "+":
+					if len(c.stack) == 1 && c.stack[0] == "+" {
+						c.stack = append(c.stack, token)
+						continue
+					}
+
+					if c.stack[0] == "+" && c.stack[1] == "+" {
+						c.stack, c.postfixExpr = c.stackOperator(token)
+					}
+
 					continue
 				case "-":
 					prevSym = "+"
@@ -336,10 +303,10 @@ func (c Calculator) getPostfix(line string) []string {
 					c.stack = append(c.stack, token)
 				case "*":
 					fmt.Println("Invalid expression")
-					return nil
+					break
 				case "/":
 					fmt.Println("Invalid expression")
-					return nil
+					break
 				}
 			} else {
 				prevSym = token
