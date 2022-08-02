@@ -19,6 +19,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 // Calculator is a type that will handle a map 'memory' to store variables such as "a = 5"
@@ -41,8 +42,16 @@ func mapContains(m map[string]int, key string) bool {
 
 // isNumeric checks if all the characters in the string are numbers
 func isNumeric(s string) bool {
-	_, err := strconv.ParseFloat(s, 64)
-	return err == nil
+	if s == "" {
+		return false
+	}
+
+	for _, c := range s {
+		if !unicode.IsDigit(c) {
+			return false
+		}
+	}
+	return true
 }
 
 // isAlpha checks if all the characters in the string are alphabet letters
@@ -88,19 +97,17 @@ func (c Calculator) assign(line string) {
 	}
 
 	// Do not handle the error here, because the program will throw an error
-	// if we output a log with an additional line due to the failed assignment
+	// if we output a log with an additional line due to the failed assignment the tests won't pass
 	v, _ := strconv.Atoi(value)
 
 	c.memory[variable] = v
 	return
 }
 
+// getCommand executes an action based on the input from the user
 func getCommand(line string) string {
 	if line == "/exit" {
 		fmt.Println("Bye!")
-		// I am using os.Exit() here, because for some reason I get the "program ran out of input" error
-		// In my Windows laptop, however this doesn't happen in my Mac.
-		// Instead of os.Exit() we can use return "Bye!" here, and it would work too, I guess!
 		os.Exit(0)
 	} else if line == "/help" {
 		return "The program calculates the sum of numbers"
@@ -108,6 +115,7 @@ func getCommand(line string) string {
 	return "Unknown command"
 }
 
+// getSign returns -1 or 1 depending on the sign of the token to properly calculate the sum of the infixExpr
 func getSign(symbol string) int {
 	if strings.Contains(symbol, "-") {
 		if len(symbol)%2 == 0 {
@@ -122,12 +130,12 @@ func getSign(symbol string) int {
 	return 1
 }
 
-// getTotal calculates the total result of the infix infixExpr
-func (c Calculator) getTotal(expression []string) int {
+// getTotal calculates the total result of the infixExpr
+func (c Calculator) getTotal(infixExpr []string) int {
 	sign := 1
 	var output []int
 
-	for _, token := range expression {
+	for _, token := range infixExpr {
 		if isNumeric(token) {
 			number, _ := strconv.Atoi(token)
 			output = append(output, sign*number)
@@ -142,7 +150,7 @@ func (c Calculator) getTotal(expression []string) int {
 	// Remember to reset the result to properly calculate the next infix expression
 	c.result = 0
 
-	// Calculate the sum of the infix infixExpr and return the result
+	// Calculate the sum of the infixExpr and return the result
 	for _, v := range output {
 		c.result += v
 	}
@@ -200,6 +208,7 @@ func (c Calculator) getExpression(line string) []string {
 		expression = append(expression, varName)
 	}
 
+	// The parsedExp slice contains the final infix expression, but with the variable numeric values.
 	for _, token := range expression {
 		if isAlpha(token) {
 			if mapContains(c.memory, token) {
@@ -223,8 +232,8 @@ func (c Calculator) getExpression(line string) []string {
 }
 
 func main() {
-	var c Calculator
-	c.memory = make(map[string]int)
+	var c Calculator                // Create an instance of the Calculator object
+	c.memory = make(map[string]int) // Initialize the memory of the calculator
 
 	for {
 		scanner := bufio.NewScanner(os.Stdin)
@@ -251,7 +260,6 @@ func main() {
 				c.message = ""
 
 				// Get the parsed infixExpr and get the total
-				// infixExpr := c.getExpression(line)
 				c.infixExpr = c.getExpression(line)
 				c.result = c.getTotal(c.infixExpr)
 			}
