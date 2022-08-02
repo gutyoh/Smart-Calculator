@@ -333,7 +333,6 @@ func (c Calculator) getPostfix(line string) []string {
 				case "-":
 					prevSym = "+"
 					pop(&c.stack)
-					// c.stack = append(c.stack, prevSym)
 					c.stack = append(c.stack, token)
 				case "*":
 					fmt.Println("Invalid expression")
@@ -413,9 +412,13 @@ func main() {
 		scanner.Scan()
 		line := scanner.Text()
 
-		// Check if the entered line has any preceding blank spaces
-		if strings.HasPrefix(line, " ") {
-			line = strings.TrimSpace(line)
+		// Always trim/remove any leading or trailing blank spaces in the line:
+		line = strings.Trim(line, " ")
+
+		// Check for the most basic case of invalid expressions, trailing operators like: 10+10-8-
+		if strings.HasSuffix(line, "+") || strings.HasSuffix(line, "-") {
+			fmt.Println("Invalid expression")
+			continue
 		}
 
 		if len(line) > 0 {
@@ -442,15 +445,6 @@ func main() {
 					joinedExpr := strings.Join(c.infixExpr, "")
 					c.postfixExpr = c.getPostfix(joinedExpr)
 					c.result = c.getTotal()
-
-					//if len(c.postfixExpr) == 2 && c.postfixExpr[len(c.postfixExpr)-1] == "-" {
-					//	c.result = c.getTotal()
-					//} else if len(c.postfixExpr) > 2 && c.postfixExpr[len(c.postfixExpr)-1] == "-" &&
-					//	c.postfixExpr[len(c.postfixExpr)-2] != "-" {
-					//	c.result = -c.getTotal()
-					//} else {
-					//	c.result = c.getTotal()
-					//}
 				}
 			}
 
