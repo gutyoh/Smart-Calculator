@@ -38,38 +38,6 @@ func isAlpha(s string) bool {
 	return re.MatchString(s)
 }
 
-// appendRemainingTokens appends the remaining tokens (tokens[1:]) after token[0] to the expression slice:
-func appendRemainingTokens(tokens, expression []string) []string {
-	operator, number := "", ""
-	for _, token := range tokens[1:] {
-		if strings.HasPrefix(token, "-") || strings.HasPrefix(token, "+") {
-			temp := strings.Split(token, "")
-			for _, t := range temp {
-				if t == "-" || t == "+" {
-					operator += t
-				} else {
-					number += t
-				}
-			}
-		}
-		if (isNumeric(token) || isNumeric(number)) && operator != "" {
-			expression = append(expression, operator)
-			operator = ""
-		}
-
-		if isNumeric(token) || isNumeric(number) {
-			if number == "" {
-				expression = append(expression, token)
-			} else {
-				token = number
-				expression = append(expression, token)
-				number = ""
-			}
-		}
-	}
-	return expression
-}
-
 // validateExpression checks if the expression is valid before calling getTotal()
 func validateExpression(expression []string) bool {
 	for i, token := range expression {
@@ -144,22 +112,17 @@ func processLine(line string) {
 			operator = ""
 		}
 	}
-	// Append the last number to the expression:
-	expression = append(expression, number)
 
-	// If there are any blank spaces in the front of the expression, remove them:
-	if expression[0] == "" {
-		expression = expression[1:]
+	if number != "" {
+		expression = append(expression, number)
 	}
+
 	// Calculate and print the total sum of the expression
 	if len(expression) > 0 && validateExpression(expression) {
 		fmt.Println(getTotal(expression))
 	} else {
 		fmt.Println("Invalid expression")
 	}
-	// Reset the expression and tokens variables for the next input
-	expression, tokens = []string{}, []string{}
-	operator, number = "", "" // Reset the temporary operator and number variables
 }
 
 func main() {
