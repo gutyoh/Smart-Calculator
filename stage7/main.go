@@ -14,16 +14,30 @@ import (
 	"log"
 	"math"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 )
+
+type ExpressionType int
+
+const (
+	_ ExpressionType = iota
+	Number
+	Sign
+	Variable
+)
+
+type Expression struct {
+	ExpressionType
+	Value string
+}
 
 type Calculator struct {
 	result      int
 	memory      map[string]int
 	message     string
-	infixExpr   []string
+	infixExpr   []Expression
 	stack       []string
 	postfixExpr []string
 }
@@ -56,14 +70,34 @@ func sliceContains(s []string, element string) bool {
 
 // isNumeric checks if all the characters in the string are numbers
 func isNumeric(s string) bool {
-	_, err := strconv.ParseFloat(s, 64)
-	return err == nil
+	if s == "" {
+		return false
+	}
+
+	for _, c := range s {
+		if !unicode.IsDigit(c) {
+			return false
+		}
+	}
+	return true
 }
 
 // isAlpha checks if all the characters in the string are alphabet letters
 func isAlpha(s string) bool {
-	re := regexp.MustCompile("^[a-zA-Z]+$")
-	return re.MatchString(s)
+	if s == "" {
+		return false
+	}
+
+	for _, c := range s {
+		if !unicode.IsLetter(c) {
+			return false
+		}
+	}
+	return true
+}
+
+func isValid(end int) bool {
+	return end != 0
 }
 
 // FOR FUN ONLY TO HANDLE FLOAT INPUTS -- THIS CAN BE REMOVED FROM FINAL SOLUTION
@@ -77,18 +111,30 @@ func floatStringToInt(a string) int {
 }
 
 // splitParenthesis separates tokens like "(3" or "1)" and returns a slice with the separated tokens
-func splitParenthesis(line []string) []string {
-	var newLine []string
-	for _, token := range line {
+func splitParenthesis(tokens []string) []Expression {
+	var newLine []Expression
+	for _, token := range tokens {
 		if strings.HasPrefix(token, "(") {
-			newLine = append(newLine, "(")
-			newLine = append(newLine, token[1:])
-		} else if strings.HasSuffix(token, ")") {
-			newLine = append(newLine, token[:len(token)-1])
-			newLine = append(newLine, ")")
-		} else {
-			newLine = append(newLine, token)
+			newLine = append(newLine, Expression{Sign, "("})
+			newLine = append(newLine, Expression{Number, token[1:]})
 		}
+
+		if strings.HasSuffix(token, ")") {
+			newLine = append(newLine, Expression{Number, token[:len(token)-1]})
+			newLine = append(newLine, Expression{Sign, ")"})
+		}
+
+		newLine = append(newLine, Expression{Number, token})
+
+		//if strings.HasPrefix(token, "(") {
+		//	newLine = append(newLine, "(")
+		//	newLine = append(newLine, token[1:])
+		//} else if strings.HasSuffix(token, ")") {
+		//	newLine = append(newLine, token[:len(token)-1])
+		//	newLine = append(newLine, ")")
+		//} else {
+		//	newLine = append(newLine, token)
+		//}
 	}
 	return newLine
 }
@@ -160,46 +206,75 @@ func getCommand(line string) string {
 	return "Unknown command"
 }
 
+func processCommand(line string) {
+	if line != "/exit" && line != "/help" {
+		fmt.Println("Unknown command")
+		return
+	}
+}
+
+func validateExpression(line string) bool {
+	// Check for the most basic case of invalid expressions, trailing operators like: 10+10-8-
+	if strings.HasSuffix(line, "+") || strings.HasSuffix(line, "-") {
+		fmt.Println("Invalid expression")
+		return false
+	}
+
+	if checkParenthesis(line) {
+		fmt.Println("Invalid expression")
+		return false
+	}
+
+	// If the expression doesn't have any trailing operators, then check if it has signs in between
+	// To confirm it is a valid expression that can further be processed
+	if strings.Contains(line, "+") || strings.Contains(line, "-") {
+		return true
+	}
+
+	// Finally check if the expression is a single positive or negative number
+	if isNumeric(line) || isAlpha(line) {
+		return true
+	}
+	return false
+}
+
 // getTotal calculates the total result of the postfixExpr infixExpr
 func (c Calculator) getTotal() int {
 	var a, b string
-	for i, val := range c.postfixExpr {
-		if isNumeric(val) {
-			c.stack = append(c.stack, val)
-		} else {
-			if len(c.stack) == 1 {
-				b = pop(&c.stack)
-				x, _ := strconv.Atoi(b)
-				// TODO FIX THIS LOGIC
-				if i == len(c.postfixExpr)-1 && val == "-" && x <= 0 {
-					return x
-				} else if i == len(c.postfixExpr)-1 && val == "+" {
-					return -x
-				} else if val == "-" {
-					c.stack = append(c.stack, strconv.Itoa(evalSymbol(0, x, val)))
-				} else {
-					c.stack = append(c.stack, strconv.Itoa(evalSymbol(x, 0, val)))
-				}
-			} else if len(c.stack) > 1 {
-				b, a = pop(&c.stack), pop(&c.stack)
-				//// FOR FUN ONLY TO HANDLE FLOAT INPUTS -- THIS CAN BE REMOVED FROM FINAL SOLUTION
-				//// Check if 'b' and 'a' are "float strings" like "3.50",
-				//// Then round them down to the lowest integer value, and then convert them back to strings
-				//if floatStringToInt(a) != 0 && floatStringToInt(b) != 0 {
-				//	a, b = strconv.Itoa(floatStringToInt(a)), strconv.Itoa(floatStringToInt(b))
-				//}
 
-				// Finally, convert 'a' and 'b' to int type:
-				x, err := strconv.Atoi(a)
-				if err != nil {
-					log.Fatal(err)
-				}
-				y, err := strconv.Atoi(b)
-				if err != nil {
-					log.Fatal(err)
-				}
-				c.stack = append(c.stack, strconv.Itoa(evalSymbol(x, y, val)))
+	for i, token := range c.postfixExpr {
+		if isNumeric(token) {
+			c.stack = append(c.stack, token)
+		}
+
+		if len(c.stack) == 1 {
+			b = pop(&c.stack)
+			x, _ := strconv.Atoi(b)
+			// TODO FIX THIS LOGIC
+			if i == len(c.postfixExpr)-1 && token == "-" && x <= 0 {
+				return x
+			} else if i == len(c.postfixExpr)-1 && token == "+" {
+				return -x
+			} else if token == "-" {
+				c.stack = append(c.stack, strconv.Itoa(evalSymbol(0, x, token)))
+			} else {
+				c.stack = append(c.stack, strconv.Itoa(evalSymbol(x, 0, token)))
 			}
+		}
+
+		if len(c.stack) > 1 {
+			b, a = pop(&c.stack), pop(&c.stack)
+
+			// Finally, convert 'a' and 'b' to int type:
+			x, err := strconv.Atoi(a)
+			if err != nil {
+				log.Fatal(err)
+			}
+			y, err := strconv.Atoi(b)
+			if err != nil {
+				log.Fatal(err)
+			}
+			c.stack = append(c.stack, strconv.Itoa(evalSymbol(x, y, token)))
 		}
 	}
 
@@ -228,15 +303,45 @@ func evalSymbol(a, b int, operator string) int {
 	}
 }
 
+func parseVariable(line string) (string, int) {
+	var variable string
+	var end int
+	for i, token := range line {
+		if !isAlpha(string(token)) {
+			end = i
+			break
+		}
+		variable += string(token)
+	}
+	return variable, end
+}
+
+func (c Calculator) getVarValue(variable string) string {
+	if !mapContains(c.memory, variable) {
+		fmt.Println("Unknown variable")
+		return ""
+	}
+	return strconv.Itoa(c.memory[variable])
+}
+
 // getPostfix converts the infix infixExpr to postfixExpr
 func (c Calculator) getPostfix(line string) []string {
-	var prevSym, temp string
+	var prevSym, temp, varName string
+	// varValue string
+	// var end int
 	var tokens []string
 
+	if !validateExpression(line) {
+		fmt.Println("Invalid expression")
+	}
+
+	line = strings.Replace(line, " ", "", -1)
+	tokens = strings.Split(line, "")
+
 	if strings.Contains(line, " ") {
-		tokens = strings.Split(line, " ")
+		c.infixExpr = splitParenthesis(tokens)
 	} else {
-		tokens = strings.Split(line, "")
+		c.infixExpr = splitParenthesis(tokens)
 	}
 
 	for i, token := range tokens {
@@ -245,12 +350,9 @@ func (c Calculator) getPostfix(line string) []string {
 			break
 		}
 
-		if token == " " {
-			continue
-		} else if isAlpha(token) {
-			// TODO add the logic to properly check long named variables like 'test'
-			// The code currently only works for single letter variables like 'a' or 'b'
-			if mapContains(c.memory, token) {
+		// TODO -- Add the logic to parse long variable names, like "test"
+		if isAlpha(token) {
+			if mapContains(c.memory, varName) {
 				prevSym = token
 				token = strconv.Itoa(c.memory[token])
 				c.postfixExpr = append(c.postfixExpr, token)
@@ -382,47 +484,67 @@ func main() {
 		// Always trim/remove any leading or trailing blank spaces in the line:
 		line = strings.Trim(line, " ")
 
-		// Check for the most basic case of invalid expressions, trailing operators like: 10+10-8-
-		if strings.HasSuffix(line, "+") || strings.HasSuffix(line, "-") {
-			fmt.Println("Invalid expression")
+		switch line {
+		case "":
 			continue
-		}
+		case "/exit":
+			fmt.Println("Bye!")
+			return
+		case "/help":
+			fmt.Println("The program calculates the sum of numbers")
+		default:
+			// Check if the line is a command that begins with "/"
+			if strings.HasPrefix(line, "/") {
+				processCommand(line)
+				continue
+			}
 
-		if len(line) > 0 {
-			if checkCommand(line) {
-				c.message = getCommand(line)
-			} else if checkAssignment(line) {
+			// Check if the line is an assignment, such as "a=5"
+			if checkAssignment(line) {
 				c.assign(line)
 				continue
-			} else {
-				if checkParenthesis(line) {
-					c.message = "Invalid expression"
-				} else {
-					// Since a command wasn't issued, reset the c.message variable
-					c.message = ""
-
-					// Use splitParenthesis to split any tokens like "(3" or "1)"
-					if strings.Contains(line, " ") {
-						c.infixExpr = splitParenthesis(strings.Split(line, " "))
-					} else {
-						c.infixExpr = splitParenthesis(strings.Split(line, ""))
-					}
-
-					// Get the postfixExpr and then calculate the result
-					joinedExpr := strings.Join(c.infixExpr, "")
-					c.postfixExpr = c.getPostfix(joinedExpr)
-					c.result = c.getTotal()
-				}
 			}
 
-			// If a command was issued, print the command message;
-			// Otherwise if 'c.postfixExpr' is not nil print the calculated result
-			if c.message != "" {
-				fmt.Println(c.message)
-			} else if c.postfixExpr != nil {
-				fmt.Println(c.result)
-				c.postfixExpr = nil // Reset the postfixExpr
-			}
+			// If none of the above cases were met, then the line is an expression like: "10+10+8"
+			// That can be further processed to get the total (in case it is valid, of course)
+			c.postfixExpr = c.getPostfix(line)
 		}
+
+		//if len(line) > 0 {
+		//	if checkCommand(line) {
+		//		c.message = getCommand(line)
+		//	} else if checkAssignment(line) {
+		//		c.assign(line)
+		//		continue
+		//	} else {
+		//		if checkParenthesis(line) {
+		//			c.message = "Invalid expression"
+		//		} else {
+		//			// Since a command wasn't issued, reset the c.message variable
+		//			c.message = ""
+		//
+		//			// Use splitParenthesis to split any tokens like "(3" or "1)"
+		//			if strings.Contains(line, " ") {
+		//				c.infixExpr = splitParenthesis(strings.Split(line, " "))
+		//			} else {
+		//				c.infixExpr = splitParenthesis(strings.Split(line, ""))
+		//			}
+		//
+		//			// Get the postfixExpr and then calculate the result
+		//			joinedExpr := strings.Join(c.infixExpr, "")
+		//			c.postfixExpr = c.getPostfix(joinedExpr)
+		//			c.result = c.getTotal()
+		//		}
+		//	}
+		//
+		//	// If a command was issued, print the command message;
+		//	// Otherwise if 'c.postfixExpr' is not nil print the calculated result
+		//	if c.message != "" {
+		//		fmt.Println(c.message)
+		//	} else if c.postfixExpr != nil {
+		//		fmt.Println(c.result)
+		//		c.postfixExpr = nil // Reset the postfixExpr
+		//	}
+		//}
 	}
 }

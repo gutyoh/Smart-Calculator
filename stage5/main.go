@@ -100,12 +100,11 @@ func parseNumber(line string) (string, int) {
 	var number string
 	var end int
 	for i, token := range line {
-		if isNumeric(string(token)) {
-			number += string(token)
-		} else {
+		if !isNumeric(string(token)) {
 			end = i
 			break
 		}
+		number += string(token)
 	}
 	return number, end
 }
@@ -114,12 +113,11 @@ func parseSign(line string) (string, int) {
 	var sign string
 	var end int
 	for i, token := range line {
-		if isSign(string(token)) {
-			sign += string(token)
-		} else {
+		if !isSign(string(token)) {
 			end = i
 			break
 		}
+		sign += string(token)
 	}
 	return sign, end
 }
@@ -151,18 +149,22 @@ func processLine(line string) {
 				line = line[end:]
 				expression = append(expression, Expression{Number, number})
 			}
-		} else if isSign(token) {
+		}
+
+		if isSign(token) {
 			sign, end = parseSign(line)
 			if isValid(end) {
 				line = line[end:]
 				expression = append(expression, Expression{Sign, sign})
 			}
-		} else if isAlpha(token) { // We can't parse any letters, only numbers and signs
+		}
+
+		if isAlpha(token) {
 			fmt.Println("Invalid expression")
 			return
 		}
 
-		// Get the last number in the expression
+		// Append the last number to the expression
 		if i == len(tokens)-1 && isNumeric(token) {
 			number, end = parseNumber(line)
 			expression = append(expression, Expression{Number, number})
@@ -211,10 +213,13 @@ func main() {
 		case "/help":
 			fmt.Println("The program calculates the sum of numbers")
 		default:
+			// Check if the line is a command that begins with "/"
 			if strings.HasPrefix(line, "/") {
 				processCommand(line)
 				continue
 			}
+			// If the line is not a command, then the line is an expression like: "10+10+8"
+			// That can be further processed to get the total (in case it is valid, of course)
 			processLine(line)
 		}
 	}

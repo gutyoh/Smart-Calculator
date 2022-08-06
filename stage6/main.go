@@ -41,12 +41,10 @@ type Expression struct {
 type Calculator struct {
 	result     int
 	memory     map[string]int
-	message    string
-	infixExpr  []string
 	expression []Expression
 }
 
-// exprValidator checks if the infixExpr is valid and that it only contains '+' or '-'
+// exprValidator checks if the expression is valid and that it only contains '+' or '-'
 var exprValidator = true
 
 // mapContains checks if a map contains a specific element
@@ -91,14 +89,6 @@ func isValid(end int) bool {
 	return end != 0
 }
 
-// checkCommand checks if the line is a command (if it begins with "/")
-func checkCommand(s string) bool {
-	if strings.HasPrefix(s, "/") {
-		return true
-	}
-	return false
-}
-
 // checkAssignment checks if the line is an assignment operation "a = 5"
 func checkAssignment(s string) bool {
 	return strings.Contains(s, "=")
@@ -135,37 +125,11 @@ func (c Calculator) assign(line string) {
 	return
 }
 
-// getCommand executes an action based on the input from the user
-func getCommand(line string) string {
-	if line == "/exit" {
-		fmt.Println("Bye!")
-		os.Exit(0)
-	} else if line == "/help" {
-		return "The program calculates the sum of numbers"
-	}
-	return "Unknown command"
-}
-
 func processCommand(line string) {
 	if line != "/exit" && line != "/help" {
 		fmt.Println("Unknown command")
 		return
 	}
-}
-
-// getSign returns -1 or 1 depending on the sign of the token to properly calculate the sum of the infixExpr
-func getSign(symbol string) int {
-	if strings.Contains(symbol, "-") {
-		if len(symbol)%2 == 0 {
-			return 1
-		} else {
-			return -1
-		}
-	} else if strings.Contains(symbol, "*") || strings.Contains(symbol, "/") {
-		fmt.Println("Invalid expression")
-		return 0
-	}
-	return 1
 }
 
 func validateExpression(line string) bool {
@@ -182,7 +146,7 @@ func validateExpression(line string) bool {
 	}
 
 	// Finally check if the expression is a single positive or negative number
-	if isNumeric(line) {
+	if isNumeric(line) || isAlpha(line) {
 		return true
 	}
 	return false
@@ -192,12 +156,11 @@ func parseNumber(line string) (string, int) {
 	var number string
 	var end int
 	for i, token := range line {
-		if isNumeric(string(token)) {
-			number += string(token)
-		} else {
+		if !isNumeric(string(token)) {
 			end = i
 			break
 		}
+		number += string(token)
 	}
 	return number, end
 }
@@ -206,12 +169,11 @@ func parseSign(line string) (string, int) {
 	var sign string
 	var end int
 	for i, token := range line {
-		if isSign(string(token)) {
-			sign += string(token)
-		} else {
+		if !isSign(string(token)) {
 			end = i
 			break
 		}
+		sign += string(token)
 	}
 	return sign, end
 }
@@ -220,25 +182,30 @@ func parseVariable(line string) (string, int) {
 	var variable string
 	var end int
 	for i, token := range line {
-		if isAlpha(string(token)) {
-			variable += string(token)
-		} else {
+		if !isAlpha(string(token)) {
 			end = i
 			break
 		}
+		variable += string(token)
 	}
 	return variable, end
 }
 
-func (c Calculator) getExpression(line string) {
+func (c Calculator) getVarValue(variable string) string {
+	if !mapContains(c.memory, variable) {
+		fmt.Println("Unknown variable")
+		return ""
+	}
+	return strconv.Itoa(c.memory[variable])
+}
+
+func (c Calculator) processLine(line string) {
 	var tokens []string
-	var number, sign, varName string
+	var number, sign, varName, varValue string
 	var end int
-	var expression []Expression
 
 	if !validateExpression(line) {
 		fmt.Println("Invalid expression")
-		return
 	}
 
 	line = strings.Replace(line, " ", "", -1)
@@ -249,59 +216,48 @@ func (c Calculator) getExpression(line string) {
 			number, end = parseNumber(line)
 			if isValid(end) {
 				line = line[end:]
-				expression = append(expression, Expression{Number, number})
+				c.expression = append(c.expression, Expression{Number, number})
 			}
-		} else if isSign(token) {
+		}
+
+		if isSign(token) {
 			sign, end = parseSign(line)
 			if isValid(end) {
 				line = line[end:]
 				c.expression = append(c.expression, Expression{Sign, sign})
 			}
-		} else if isAlpha(token) {
+		}
+
+		if isAlpha(token) {
 			varName, end = parseVariable(line)
 			if isValid(end) {
 				line = line[end:]
-				c.expression = append(c.expression, Expression{Variable, varName})
+				varValue = c.getVarValue(varName)
+				if varValue != "" {
+					c.expression = append(c.expression, Expression{Variable, varValue})
+				}
 			}
 		}
 
-		// Get the last number or variable in the expression
+		// Append the last number, or last variable to the expression
 		if i == len(tokens)-1 && isNumeric(token) {
 			number, end = parseNumber(line)
 			c.expression = append(c.expression, Expression{Number, number})
-		} else if i == len(tokens)-1 && isAlpha(token) {
+		}
+
+		if i == len(tokens)-1 && isAlpha(token) {
 			varName, end = parseVariable(line)
-			c.expression = append(c.expression, Expression{Variable, varName})
+			varValue = c.getVarValue(varName)
+			if varValue != "" {
+				c.expression = append(c.expression, Expression{Variable, varValue})
+			}
 		}
 	}
-}
 
-//// getTotal calculates the total result of the infixExpr
-//func (c Calculator) getTotal(infixExpr []string) int {
-//	sign := 1
-//	var output []int
-//
-//	for _, token := range infixExpr {
-//		if isNumeric(token) {
-//			number, _ := strconv.Atoi(token)
-//			output = append(output, sign*number)
-//		} else if getSign(token) == 0 {
-//			exprValidator = false
-//			break
-//		} else {
-//			sign = getSign(token)
-//		}
-//	}
-//
-//	// Remember to reset the result to properly calculate the next infix expression
-//	c.result = 0
-//
-//	// Calculate the sum of the infixExpr and return the result
-//	for _, v := range output {
-//		c.result += v
-//	}
-//	return c.result
-//}
+	if len(c.expression) > 0 {
+		fmt.Println(c.getTotal(c.expression))
+	}
+}
 
 func (c Calculator) getTotal(expression []Expression) int {
 	total, sign := 0, 1
@@ -310,7 +266,9 @@ func (c Calculator) getTotal(expression []Expression) int {
 			if strings.Count(token.Value, "-")%2 == 1 {
 				sign *= -1
 			}
-		} else if isNumeric(token.Value) {
+		}
+
+		if isNumeric(token.Value) {
 			n, err := strconv.Atoi(token.Value)
 			if err != nil {
 				log.Fatal(err)
@@ -343,35 +301,21 @@ func main() {
 		case "/help":
 			fmt.Println("The program calculates the sum of numbers")
 		default:
+			// Check if the line is a command that begins with "/"
 			if strings.HasPrefix(line, "/") {
 				processCommand(line)
 				continue
 			}
-			c.getExpression(line)
-		}
 
-		//if len(line) > 0 {
-		//	if checkCommand(line) {
-		//		c.message = getCommand(line)
-		//	} else if checkAssignment(line) {
-		//		c.assign(line)
-		//		continue
-		//	} else {
-		//		// Since a command wasn't issued, reset the c.message variable
-		//		c.message = ""
-		//
-		//		// Get the parsed infixExpr and get the total
-		//		c.infixExpr = c.getExpression(line)
-		//		c.result = c.getTotal(c.infixExpr)
-		//	}
-		//
-		//	// If a command was issued, print the command message;
-		//	// Otherwise if 'c.infixExpr' is not nil print the calculated result
-		//	if c.message != "" {
-		//		fmt.Println(c.message)
-		//	} else if c.infixExpr != nil && exprValidator {
-		//		fmt.Println(c.result)
-		//	}
-		//}
+			// Check if the line is an assignment, such as "a=5"
+			if checkAssignment(line) {
+				c.assign(line)
+				continue
+			}
+
+			// If none of the above cases were met, then the line is an expression like: "10+10+8"
+			// That can be further processed to get the total (in case it is valid, of course)
+			c.processLine(line)
+		}
 	}
 }
