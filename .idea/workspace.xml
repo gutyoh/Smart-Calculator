@@ -6,7 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="96a21561-463b-4603-9205-7ed0522a85a7" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stage7/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/stage7/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stage5/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/stage5/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stage6/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/stage6/main.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,21 +49,21 @@
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
 }</component>
-  <component name="RunManager" selected="Go Build.go build main.go (1)">
-    <configuration name="go build main.go (1)" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
-      <module name="Smart-Calculator" />
-      <working_directory value="$PROJECT_DIR$" />
-      <kind value="FILE" />
-      <directory value="$PROJECT_DIR$" />
-      <filePath value="$PROJECT_DIR$/stage7/main.go" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Python.sol">
     <configuration name="go build main.go (3)" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="Smart-Calculator" />
       <working_directory value="$PROJECT_DIR$" />
       <kind value="FILE" />
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$/stage6/main.go" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="Smart-Calculator" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/stage5/main.go" />
       <method v="2" />
     </configuration>
     <configuration name="sol" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
@@ -133,10 +134,9 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Go Build.go build main.go (1)" />
+        <item itemvalue="Python.tests (2)" />
         <item itemvalue="Python.sol" />
         <item itemvalue="Python.tests (1)" />
-        <item itemvalue="Python.tests (2)" />
       </list>
     </recent_temporary>
   </component>
@@ -148,7 +148,9 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1659449608791</updated>
-      <workItem from="1659449610693" duration="1205000" />
+      <workItem from="1659449610693" duration="1795000" />
+      <workItem from="1659727178512" duration="672000" />
+      <workItem from="1659734513893" duration="624000" />
     </task>
     <servers />
   </component>
@@ -172,52 +174,54 @@
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/stage7/main.go</url>
-          <line>165</line>
-          <option name="timeStamp" value="135" />
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/stage7/temp/sol.py</url>
+          <line>160</line>
+          <option name="timeStamp" value="112" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/stage7/main.go</url>
-          <line>413</line>
-          <option name="timeStamp" value="141" />
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/stage7/temp/sol.py</url>
+          <line>170</line>
+          <option name="timeStamp" value="113" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/stage7/main.go</url>
-          <line>412</line>
-          <option name="timeStamp" value="142" />
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/stage7/temp/sol.py</url>
+          <line>93</line>
+          <option name="timeStamp" value="114" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/stage7/main.go</url>
-          <line>241</line>
-          <option name="timeStamp" value="143" />
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/stage7/temp/sol.py</url>
+          <line>159</line>
+          <option name="timeStamp" value="116" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/stage7/temp/sol.py</url>
+          <line>178</line>
+          <option name="timeStamp" value="117" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/stage7/temp/sol.py</url>
+          <line>109</line>
+          <option name="timeStamp" value="120" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/stage7/temp/sol.py</url>
+          <line>114</line>
+          <option name="timeStamp" value="121" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/stage7/temp/sol.py</url>
+          <line>123</line>
+          <option name="timeStamp" value="122" />
         </line-breakpoint>
       </breakpoints>
-      <default-breakpoints>
-        <breakpoint type="DlvErrorBreakpoint" />
-        <breakpoint type="python-exception">
-          <properties notifyOnTerminate="true" exception="BaseException">
-            <option name="notifyOnTerminate" value="true" />
-          </properties>
-        </breakpoint>
-      </default-breakpoints>
     </breakpoint-manager>
     <watches-manager>
-      <configuration name="GoApplicationRunConfiguration">
-        <watch expression="c.postfixExpr" />
-        <watch expression="c.stack" />
-        <watch expression="string(token)" />
-        <watch expression="prevSym" />
-        <watch expression="i" />
+      <configuration name="PythonConfigurationType">
+        <watch expression="list(user_input)" language="Python" />
       </configuration>
       <inline-watch fileUrl="file://$PROJECT_DIR$/stage7/main.go" line="165">
         <watch expression="strings.Join(c.postfixExpr, &quot;&quot;)" />
-      </inline-watch>
-      <inline-watch fileUrl="file://$PROJECT_DIR$/stage7/main.go" line="241">
-        <watch expression="c.postfixExpr" />
-      </inline-watch>
-      <inline-watch fileUrl="file://$PROJECT_DIR$/stage5/main.go" line="74">
-        <watch expression="expression[i-1]" />
       </inline-watch>
     </watches-manager>
   </component>

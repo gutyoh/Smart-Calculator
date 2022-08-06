@@ -15,20 +15,35 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
 )
 
+type ExpressionType int
+
+const (
+	_ ExpressionType = iota
+	Number
+	Sign
+	Variable
+)
+
+type Expression struct {
+	ExpressionType
+	Value string
+}
+
 // Calculator is a type that will handle a map 'memory' to store variables such as "a = 5"
 // And a string 'result' to store the result of the operation
 type Calculator struct {
-	result    int
-	memory    map[string]int
-	message   string
-	infixExpr []string
+	result     int
+	memory     map[string]int
+	message    string
+	infixExpr  []string
+	expression []Expression
 }
 
 // exprValidator checks if the infixExpr is valid and that it only contains '+' or '-'
@@ -56,8 +71,24 @@ func isNumeric(s string) bool {
 
 // isAlpha checks if all the characters in the string are alphabet letters
 func isAlpha(s string) bool {
-	re := regexp.MustCompile("^[a-zA-Z]+$")
-	return re.MatchString(s)
+	if s == "" {
+		return false
+	}
+
+	for _, c := range s {
+		if !unicode.IsLetter(c) {
+			return false
+		}
+	}
+	return true
+}
+
+func isSign(token string) bool {
+	return token == "+" || token == "-"
+}
+
+func isValid(end int) bool {
+	return end != 0
 }
 
 // checkCommand checks if the line is a command (if it begins with "/")
@@ -115,6 +146,13 @@ func getCommand(line string) string {
 	return "Unknown command"
 }
 
+func processCommand(line string) {
+	if line != "/exit" && line != "/help" {
+		fmt.Println("Unknown command")
+		return
+	}
+}
+
 // getSign returns -1 or 1 depending on the sign of the token to properly calculate the sum of the infixExpr
 func getSign(symbol string) int {
 	if strings.Contains(symbol, "-") {
@@ -130,105 +168,158 @@ func getSign(symbol string) int {
 	return 1
 }
 
-// getTotal calculates the total result of the infixExpr
-func (c Calculator) getTotal(infixExpr []string) int {
-	sign := 1
-	var output []int
-
-	for _, token := range infixExpr {
-		if isNumeric(token) {
-			number, _ := strconv.Atoi(token)
-			output = append(output, sign*number)
-		} else if getSign(token) == 0 {
-			exprValidator = false
-			break
-		} else {
-			sign = getSign(token)
-		}
+func validateExpression(line string) bool {
+	// Check for the most basic case of invalid expressions, trailing operators like: 10+10-8-
+	if strings.HasSuffix(line, "+") || strings.HasSuffix(line, "-") {
+		fmt.Println("Invalid expression")
+		return false
 	}
 
-	// Remember to reset the result to properly calculate the next infix expression
-	c.result = 0
-
-	// Calculate the sum of the infixExpr and return the result
-	for _, v := range output {
-		c.result += v
+	// If the expression doesn't have any trailing operators, then check if it has signs in between
+	// To confirm it is a valid expression that can further be processed
+	if strings.Contains(line, "+") || strings.Contains(line, "-") {
+		return true
 	}
-	return c.result
+
+	// Finally check if the expression is a single positive or negative number
+	if isNumeric(line) {
+		return true
+	}
+	return false
 }
 
-func (c Calculator) getExpression(line string) []string {
-	var parsedExp, expression, tokens []string
-	var operator, varName, number string
+func parseNumber(line string) (string, int) {
+	var number string
+	var end int
+	for i, token := range line {
+		if isNumeric(string(token)) {
+			number += string(token)
+		} else {
+			end = i
+			break
+		}
+	}
+	return number, end
+}
 
+func parseSign(line string) (string, int) {
+	var sign string
+	var end int
+	for i, token := range line {
+		if isSign(string(token)) {
+			sign += string(token)
+		} else {
+			end = i
+			break
+		}
+	}
+	return sign, end
+}
+
+func parseVariable(line string) (string, int) {
+	var variable string
+	var end int
+	for i, token := range line {
+		if isAlpha(string(token)) {
+			variable += string(token)
+		} else {
+			end = i
+			break
+		}
+	}
+	return variable, end
+}
+
+func (c Calculator) getExpression(line string) {
+	var tokens []string
+	var number, sign, varName string
+	var end int
+	var expression []Expression
+
+	if !validateExpression(line) {
+		fmt.Println("Invalid expression")
+		return
+	}
+
+	line = strings.Replace(line, " ", "", -1)
 	tokens = strings.Split(line, "")
 
 	for i, token := range tokens {
-		if token == "+" || token == "-" {
-			operator += token
-		}
-
-		if token == " " {
-			continue
-		}
-
-		if i == len(tokens)-1 {
-			if isNumeric(token) && tokens[i-1] == " " && isNumeric(tokens[i-2]) {
-				fmt.Println("Invalid expression")
-				return nil
-			}
-		}
-
 		if isNumeric(token) {
-			number += token
+			number, end = parseNumber(line)
+			if isValid(end) {
+				line = line[end:]
+				expression = append(expression, Expression{Number, number})
+			}
+		} else if isSign(token) {
+			sign, end = parseSign(line)
+			if isValid(end) {
+				line = line[end:]
+				c.expression = append(c.expression, Expression{Sign, sign})
+			}
 		} else if isAlpha(token) {
-			varName += token
+			varName, end = parseVariable(line)
+			if isValid(end) {
+				line = line[end:]
+				c.expression = append(c.expression, Expression{Variable, varName})
+			}
 		}
 
-		if !isNumeric(token) && number != "" {
-			expression = append(expression, number)
-			number = ""
-		} else if !isAlpha(token) && varName != "" {
-			expression = append(expression, varName)
-			varName = ""
-		}
-
-		if isNumeric(token) && operator != "" {
-			expression = append(expression, operator)
-			operator = ""
-		} else if isAlpha(token) && operator != "" {
-			expression = append(expression, operator)
-			operator = ""
+		// Get the last number or variable in the expression
+		if i == len(tokens)-1 && isNumeric(token) {
+			number, end = parseNumber(line)
+			c.expression = append(c.expression, Expression{Number, number})
+		} else if i == len(tokens)-1 && isAlpha(token) {
+			varName, end = parseVariable(line)
+			c.expression = append(c.expression, Expression{Variable, varName})
 		}
 	}
-	// Append the last number or variable to the expression:
-	if number != "" {
-		expression = append(expression, number)
-	} else if varName != "" {
-		expression = append(expression, varName)
-	}
+}
 
-	// The parsedExp slice contains the final infix expression, but with the variable numeric values.
+//// getTotal calculates the total result of the infixExpr
+//func (c Calculator) getTotal(infixExpr []string) int {
+//	sign := 1
+//	var output []int
+//
+//	for _, token := range infixExpr {
+//		if isNumeric(token) {
+//			number, _ := strconv.Atoi(token)
+//			output = append(output, sign*number)
+//		} else if getSign(token) == 0 {
+//			exprValidator = false
+//			break
+//		} else {
+//			sign = getSign(token)
+//		}
+//	}
+//
+//	// Remember to reset the result to properly calculate the next infix expression
+//	c.result = 0
+//
+//	// Calculate the sum of the infixExpr and return the result
+//	for _, v := range output {
+//		c.result += v
+//	}
+//	return c.result
+//}
+
+func (c Calculator) getTotal(expression []Expression) int {
+	total, sign := 0, 1
 	for _, token := range expression {
-		if isAlpha(token) {
-			if mapContains(c.memory, token) {
-				parsedExp = append(parsedExp, strconv.Itoa(c.memory[token]))
-			} else {
-				fmt.Println("Unknown variable")
-				return nil
+		if strings.Contains(token.Value, "-") {
+			if strings.Count(token.Value, "-")%2 == 1 {
+				sign *= -1
 			}
-		} else if strings.Contains(token, "+") || strings.Contains(token, "-") {
-			parsedExp = append(parsedExp, token)
-		} else {
-			if isNumeric(token) {
-				parsedExp = append(parsedExp, token)
-			} else {
-				fmt.Println("Invalid expression")
-				return nil
+		} else if isNumeric(token.Value) {
+			n, err := strconv.Atoi(token.Value)
+			if err != nil {
+				log.Fatal(err)
 			}
+			total += n * sign
+			sign = 1
 		}
 	}
-	return parsedExp
+	return total
 }
 
 func main() {
@@ -243,34 +334,44 @@ func main() {
 		// Always trim/remove any leading or trailing blank spaces in the line:
 		line = strings.Trim(line, " ")
 
-		// Check for the most basic case of invalid expressions, trailing operators like: 10+10-8-
-		if strings.HasSuffix(line, "+") || strings.HasSuffix(line, "-") {
-			fmt.Println("Invalid expression")
+		switch line {
+		case "":
 			continue
-		}
-
-		if len(line) > 0 {
-			if checkCommand(line) {
-				c.message = getCommand(line)
-			} else if checkAssignment(line) {
-				c.assign(line)
+		case "/exit":
+			fmt.Println("Bye!")
+			return
+		case "/help":
+			fmt.Println("The program calculates the sum of numbers")
+		default:
+			if strings.HasPrefix(line, "/") {
+				processCommand(line)
 				continue
-			} else {
-				// Since a command wasn't issued, reset the c.message variable
-				c.message = ""
-
-				// Get the parsed infixExpr and get the total
-				c.infixExpr = c.getExpression(line)
-				c.result = c.getTotal(c.infixExpr)
 			}
-
-			// If a command was issued, print the command message;
-			// Otherwise if 'c.infixExpr' is not nil print the calculated result
-			if c.message != "" {
-				fmt.Println(c.message)
-			} else if c.infixExpr != nil && exprValidator {
-				fmt.Println(c.result)
-			}
+			c.getExpression(line)
 		}
+
+		//if len(line) > 0 {
+		//	if checkCommand(line) {
+		//		c.message = getCommand(line)
+		//	} else if checkAssignment(line) {
+		//		c.assign(line)
+		//		continue
+		//	} else {
+		//		// Since a command wasn't issued, reset the c.message variable
+		//		c.message = ""
+		//
+		//		// Get the parsed infixExpr and get the total
+		//		c.infixExpr = c.getExpression(line)
+		//		c.result = c.getTotal(c.infixExpr)
+		//	}
+		//
+		//	// If a command was issued, print the command message;
+		//	// Otherwise if 'c.infixExpr' is not nil print the calculated result
+		//	if c.message != "" {
+		//		fmt.Println(c.message)
+		//	} else if c.infixExpr != nil && exprValidator {
+		//		fmt.Println(c.result)
+		//	}
+		//}
 	}
 }

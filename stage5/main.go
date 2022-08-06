@@ -12,11 +12,23 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
 )
+
+type ExpressionType int
+
+const (
+	_ ExpressionType = iota
+	Number
+	Sign
+)
+
+type Expression struct {
+	ExpressionType
+	Value string
+}
 
 // isNumeric checks if all the characters in the string are digits
 func isNumeric(s string) bool {
@@ -34,68 +46,143 @@ func isNumeric(s string) bool {
 
 // isAlpha checks if all the characters in the string are alphabet letters
 func isAlpha(s string) bool {
-	re := regexp.MustCompile("^[a-zA-Z]+$")
-	return re.MatchString(s)
-}
+	//re := regexp.MustCompile("^[a-zA-Z]+$")
+	//return re.MatchString(s)
 
-// appendRemainingTokens appends the remaining tokens (tokens[1:]) after token[0] to the expression slice:
-func appendRemainingTokens(tokens, expression []string) []string {
-	operator, number := "", ""
-	for _, token := range tokens[1:] {
-		if strings.HasPrefix(token, "-") || strings.HasPrefix(token, "+") {
-			temp := strings.Split(token, "")
-			for _, t := range temp {
-				if t == "-" || t == "+" {
-					operator += t
-				} else {
-					number += t
-				}
-			}
-		}
-		if (isNumeric(token) || isNumeric(number)) && operator != "" {
-			expression = append(expression, operator)
-			operator = ""
-		}
-
-		if isNumeric(token) || isNumeric(number) {
-			if number == "" {
-				expression = append(expression, token)
-			} else {
-				token = number
-				expression = append(expression, token)
-				number = ""
-			}
-		}
+	if s == "" {
+		return false
 	}
-	return expression
-}
 
-// validateExpression checks if the expression is valid before calling getTotal()
-func validateExpression(expression []string) bool {
-	for i, token := range expression {
-		if isAlpha(token) {
-			fmt.Println("Invalid expression")
+	for _, c := range s {
+		if !unicode.IsLetter(c) {
 			return false
-		}
-		if i > 0 {
-			if isNumeric(token) && isNumeric(expression[i-1]) {
-				return false
-			}
 		}
 	}
 	return true
 }
 
-// getTotal calculates and returns the total sum of the numbers in the expression slice
-func getTotal(expression []string) int {
+func isSign(token string) bool {
+	return token == "+" || token == "-"
+}
+
+func isValid(end int) bool {
+	return end != 0
+}
+
+func processCommand(line string) {
+	if line != "/exit" && line != "/help" {
+		fmt.Println("Unknown command")
+		return
+	}
+}
+
+func validateExpression(line string) bool {
+	// Check for the most basic case of invalid expressions, trailing operators like: 10+10-8-
+	if strings.HasSuffix(line, "+") || strings.HasSuffix(line, "-") {
+		fmt.Println("Invalid expression")
+		return false
+	}
+
+	// If the expression doesn't have any trailing operators, then check if it has signs in between
+	// To confirm it is a valid expression that can further be processed
+	if strings.Contains(line, "+") || strings.Contains(line, "-") {
+		return true
+	}
+
+	// Finally check if the expression is a single positive or negative number
+	if isNumeric(line) {
+		return true
+	}
+	return false
+}
+
+func parseNumber(line string) (string, int) {
+	var number string
+	var end int
+	for i, token := range line {
+		if isNumeric(string(token)) {
+			number += string(token)
+		} else {
+			end = i
+			break
+		}
+	}
+	return number, end
+}
+
+func parseSign(line string) (string, int) {
+	var sign string
+	var end int
+	for i, token := range line {
+		if isSign(string(token)) {
+			sign += string(token)
+		} else {
+			end = i
+			break
+		}
+	}
+	return sign, end
+}
+
+// processLine does the actual work of the program:
+func processLine(line string) {
+	var tokens []string
+	var sign string
+	var number string
+	var end int
+	var expression []Expression
+
+	if !validateExpression(line) {
+		fmt.Println("Invalid expression")
+		return
+	}
+
+	// Since the input is not a command, we can assume it is an expression
+	// We need to remove all blank spaces from the input 'line' with the strings.Replace() function
+	// So expressions like "10 + 10 + 8" or "10 +10 +8" are converted to "10+10+8"
+	// The algorithm can only properly parse expressions that do not have any blank spaces in between
+	line = strings.Replace(line, " ", "", -1)
+	tokens = strings.Split(line, "")
+
+	for i, token := range tokens {
+		if isNumeric(token) {
+			number, end = parseNumber(line)
+			if isValid(end) {
+				line = line[end:]
+				expression = append(expression, Expression{Number, number})
+			}
+		} else if isSign(token) {
+			sign, end = parseSign(line)
+			if isValid(end) {
+				line = line[end:]
+				expression = append(expression, Expression{Sign, sign})
+			}
+		} else if isAlpha(token) { // We can't parse any letters, only numbers and signs
+			fmt.Println("Invalid expression")
+			return
+		}
+
+		// Get the last number in the expression
+		if i == len(tokens)-1 && isNumeric(token) {
+			number, end = parseNumber(line)
+			expression = append(expression, Expression{Number, number})
+		}
+	}
+
+	if len(expression) > 0 {
+		fmt.Println(getTotal(expression))
+	}
+}
+
+func getTotal(expression []Expression) int {
 	total, sign := 0, 1
 	for _, token := range expression {
-		if strings.Contains(token, "-") {
-			if strings.Count(token, "-")%2 == 1 {
+		if strings.Contains(token.Value, "-") {
+			if strings.Count(token.Value, "-")%2 == 1 {
 				sign *= -1
 			}
-		} else if isNumeric(token) {
-			n, err := strconv.Atoi(token)
+		} else if isNumeric(token.Value) {
+			n, err := strconv.Atoi(token.Value)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -104,62 +191,6 @@ func getTotal(expression []string) int {
 		}
 	}
 	return total
-}
-
-// processLine does the actual work of the program:
-func processLine(line string) {
-	var tokens []string
-	var operator string
-	var number string
-	var expression []string
-
-	tokens = strings.Split(line, "")
-	for i, token := range tokens {
-		if token == "+" || token == "-" {
-			operator += token
-		}
-
-		if token == " " {
-			continue
-		}
-
-		if i == len(tokens)-1 {
-			if isNumeric(token) && tokens[i-1] == " " && isNumeric(tokens[i-2]) {
-				fmt.Println("Invalid expression")
-				return
-			}
-		}
-
-		if isNumeric(token) {
-			number += token
-		}
-
-		if !isNumeric(token) && number != "" {
-			expression = append(expression, number)
-			number = ""
-		}
-
-		if isNumeric(token) && operator != "" {
-			expression = append(expression, operator)
-			operator = ""
-		}
-	}
-	// Append the last number to the expression:
-	expression = append(expression, number)
-
-	// If there are any blank spaces in the front of the expression, remove them:
-	if expression[0] == "" {
-		expression = expression[1:]
-	}
-	// Calculate and print the total sum of the expression
-	if len(expression) > 0 && validateExpression(expression) {
-		fmt.Println(getTotal(expression))
-	} else {
-		fmt.Println("Invalid expression")
-	}
-	// Reset the expression and tokens variables for the next input
-	expression, tokens = []string{}, []string{}
-	operator, number = "", "" // Reset the temporary operator and number variables
 }
 
 func main() {
@@ -171,12 +202,6 @@ func main() {
 		// Always trim/remove any leading or trailing blank spaces in the line:
 		line = strings.Trim(line, " ")
 
-		// Check for the most basic case of invalid expressions, trailing operators like: 10+10-8-
-		if strings.HasSuffix(line, "+") || strings.HasSuffix(line, "-") {
-			fmt.Println("Invalid expression")
-			continue
-		}
-
 		switch line {
 		case "":
 			continue
@@ -186,19 +211,11 @@ func main() {
 		case "/help":
 			fmt.Println("The program calculates the sum of numbers")
 		default:
-			if strings.HasPrefix(line, "/") || strings.Contains(line, "=") {
-				fmt.Println("Unknown command")
+			if strings.HasPrefix(line, "/") {
+				processCommand(line)
 				continue
 			}
-
-			if strings.Contains(line, "+") || strings.Contains(line, "-") {
-				processLine(line)
-			} else if line != "" && !isAlpha(line) {
-				fmt.Println(line)
-			} else {
-				fmt.Println("Invalid expression")
-				continue
-			}
+			processLine(line)
 		}
 	}
 }
