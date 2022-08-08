@@ -11,7 +11,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"math"
 	"os"
 	"strconv"
@@ -103,7 +102,7 @@ func isSign(token string) bool {
 }
 
 func isSymbol(token string) bool {
-	return token == "*" || token == "/" || token == "^"
+	return sliceContains(symbols, token)
 }
 
 func isParenthesis(token string) bool {
@@ -229,22 +228,31 @@ func validateExpression(line string) bool {
 // getTotal calculates the total result of the postfixExpr infixExpr
 func (c Calculator) getTotal() int {
 	var a, b string
+	var sign = 1
 
+	// TODO - Fix this logic to handle multiple "-" or "+" symbols as the first
+	// symbols in the expression, like: ++10++10--8 or --10--10--8
 	for _, token := range c.postfixExpr {
+		if strings.Contains(token, "-") {
+			if strings.Count(token, "-")%2 == 1 {
+				sign *= -1
+				if len(c.stack) < 1 {
+					continue
+				}
+			}
+		}
+
 		if isNumeric(token) {
 			c.stack = append(c.stack, token)
-		} else {
+		} else if len(c.stack) > 1 {
 			b, a = pop(&c.stack), pop(&c.stack)
-			x, err := strconv.Atoi(a)
-			if err != nil {
-				log.Fatal(err)
-			}
-			y, err := strconv.Atoi(b)
-			if err != nil {
-				log.Fatal(err)
-			}
+
+			x, _ := strconv.Atoi(a)
+			y, _ := strconv.Atoi(b)
+
 			c.stack = append(c.stack, strconv.Itoa(evalSymbol(x, y, token)))
 		}
+
 	}
 
 	if len(c.stack) > 0 {
@@ -283,19 +291,6 @@ func parseNumber(line string) (string, int) {
 		number += string(token)
 	}
 	return number, end
-}
-
-func parseSign(line string) (string, int) {
-	var sign string
-	var end int
-	for i, token := range line {
-		if isSign(string(token)) {
-			sign += string(token)
-			end = i + 1
-			break
-		}
-	}
-	return sign, end
 }
 
 func parseSymbol(line string) (string, int) {
@@ -347,7 +342,7 @@ func (c Calculator) getVarValue(variable string) string {
 
 func (c Calculator) processLine(line string) {
 	var tokens []string
-	var number, parenthesis, sign, symbol, varName, varValue string
+	var number, parenthesis, symbol, varName, varValue string
 	var end int
 
 	if !validateExpression(line) {
@@ -368,14 +363,6 @@ func (c Calculator) processLine(line string) {
 			if isValid(end) {
 				line = line[end:]
 				c.expression = append(c.expression, Expression{Number, number})
-			}
-		}
-
-		if isSign(token) {
-			sign, end = parseSign(line)
-			if isValid(end) {
-				line = line[end:]
-				c.expression = append(c.expression, Expression{Sign, sign})
 			}
 		}
 
@@ -429,10 +416,10 @@ func (c Calculator) processLine(line string) {
 			}
 		}
 
-		if i == len(tokens)-1 && isSign(token) {
-			sign, end = parseSign(line)
-			if sign != "" {
-				c.expression = append(c.expression, Expression{Sign, sign})
+		if i == len(tokens)-1 && isSymbol(token) {
+			symbol, end = parseSymbol(line)
+			if symbol != "" {
+				c.expression = append(c.expression, Expression{Symbol, symbol})
 			}
 		}
 	}
@@ -447,11 +434,14 @@ func (c Calculator) processLine(line string) {
 func (c Calculator) getPostfix(expression []Expression) []string {
 	var prevSym string
 
-	for _, token := range expression {
+	for i, token := range expression {
 		if isNumeric(token.Value) {
 			if prevSym != "" && isNumeric(prevSym) {
 				c.postfixExpr = append(c.postfixExpr, pop(&c.postfixExpr)+token.Value)
 			} else {
+				if i == 1 && (c.stack[0] == "-" || c.stack[0] == "+") {
+					c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
+				}
 				c.postfixExpr = append(c.postfixExpr, token.Value)
 				prevSym = token.Value
 			}
@@ -466,11 +456,10 @@ func (c Calculator) getPostfix(expression []Expression) []string {
 
 			if prevSym == token.Value {
 				if "+" == token.Value {
-					continue
+					c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
 				} else if "-" == token.Value {
-					prevSym = "+"
 					pop(&c.stack)
-					c.stack = append(c.stack, "+")
+					c.stack = append(c.stack, "-")
 				} else if "*" == token.Value || "/" == token.Value {
 					fmt.Println("Invalid expression")
 					return nil
