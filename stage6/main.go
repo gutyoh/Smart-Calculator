@@ -28,7 +28,6 @@ const (
 	_ ExpressionType = iota
 	Number
 	Sign
-	Variable
 )
 
 type Expression struct {
@@ -39,13 +38,9 @@ type Expression struct {
 // Calculator is a type that will handle a map 'memory' to store variables such as "a = 5"
 // And a string 'result' to store the result of the operation
 type Calculator struct {
-	result     int
 	memory     map[string]int
 	expression []Expression
 }
-
-// exprValidator checks if the expression is valid and that it only contains '+' or '-'
-var exprValidator = true
 
 // mapContains checks if a map contains a specific element
 func mapContains(m map[string]int, key string) bool {
@@ -234,7 +229,7 @@ func (c Calculator) processLine(line string) {
 				line = line[end:]
 				varValue = c.getVarValue(varName)
 				if varValue != "" {
-					c.expression = append(c.expression, Expression{Variable, varValue})
+					c.expression = append(c.expression, Expression{Number, varValue})
 				}
 			}
 		}
@@ -249,7 +244,7 @@ func (c Calculator) processLine(line string) {
 			varName, end = parseVariable(line)
 			varValue = c.getVarValue(varName)
 			if varValue != "" {
-				c.expression = append(c.expression, Expression{Variable, varValue})
+				c.expression = append(c.expression, Expression{Number, varValue})
 			}
 		}
 	}

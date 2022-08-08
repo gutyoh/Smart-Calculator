@@ -23,10 +23,7 @@ type ExpressionType int
 const (
 	_ ExpressionType = iota
 	Number
-	Sign
 	Symbol
-	Parenthesis
-	Variable
 )
 
 type Expression struct {
@@ -35,9 +32,7 @@ type Expression struct {
 }
 
 type Calculator struct {
-	result      int
 	memory      map[string]int
-	message     string
 	stack       []string
 	postfixExpr []string
 	expression  []Expression
@@ -97,10 +92,6 @@ func isAlpha(s string) bool {
 	return true
 }
 
-func isSign(token string) bool {
-	return token == "+" || token == "-"
-}
-
 func isSymbol(token string) bool {
 	return sliceContains(symbols, token)
 }
@@ -128,11 +119,6 @@ func splitParenthesis(tokens []string) []string {
 		}
 	}
 	return newLine
-}
-
-// repeatedSymbol checks if there is more than one "*" or "/" symbol in the line
-func repeatedSymbol(line string) bool {
-	return strings.Count(line, "*") > 1 || strings.Count(line, "/") > 1
 }
 
 // pop deletes the last element of the stack
@@ -252,7 +238,6 @@ func (c Calculator) getTotal() int {
 
 			c.stack = append(c.stack, strconv.Itoa(evalSymbol(x, y, token)))
 		}
-
 	}
 
 	if len(c.stack) > 0 {
@@ -378,7 +363,7 @@ func (c Calculator) processLine(line string) {
 			parenthesis, end = parseParenthesis(line)
 			if isValid(end) {
 				line = line[end:]
-				c.expression = append(c.expression, Expression{Parenthesis, parenthesis})
+				c.expression = append(c.expression, Expression{Symbol, parenthesis})
 			}
 		}
 
@@ -388,7 +373,7 @@ func (c Calculator) processLine(line string) {
 				line = line[end:]
 				varValue = c.getVarValue(varName)
 				if varValue != "" {
-					c.expression = append(c.expression, Expression{Variable, varValue})
+					c.expression = append(c.expression, Expression{Number, varValue})
 				}
 			}
 		}
@@ -401,25 +386,25 @@ func (c Calculator) processLine(line string) {
 			}
 		}
 
-		if i == len(tokens)-1 && isAlpha(token) {
-			varName, end = parseVariable(line)
-			varValue = c.getVarValue(varName)
-			if varValue != "" {
-				c.expression = append(c.expression, Expression{Variable, varValue})
+		if i == len(tokens)-1 && isSymbol(token) {
+			symbol, end = parseSymbol(line)
+			if symbol != "" {
+				c.expression = append(c.expression, Expression{Symbol, symbol})
 			}
 		}
 
 		if i == len(tokens)-1 && isParenthesis(token) {
 			parenthesis, end = parseParenthesis(line)
 			if parenthesis != "" {
-				c.expression = append(c.expression, Expression{Parenthesis, parenthesis})
+				c.expression = append(c.expression, Expression{Symbol, parenthesis})
 			}
 		}
 
-		if i == len(tokens)-1 && isSymbol(token) {
-			symbol, end = parseSymbol(line)
-			if symbol != "" {
-				c.expression = append(c.expression, Expression{Symbol, symbol})
+		if i == len(tokens)-1 && isAlpha(token) {
+			varName, end = parseVariable(line)
+			varValue = c.getVarValue(varName)
+			if varValue != "" {
+				c.expression = append(c.expression, Expression{Number, varValue})
 			}
 		}
 	}
@@ -484,6 +469,14 @@ func (c Calculator) getPostfix(expression []Expression) []string {
 	return c.postfixExpr
 }
 
+// higherPrecedence returns true if the first symbol has higher precedence than the second
+func higherPrecedence(stackPop, token string) bool {
+	if stackPop == "(" || operatorRank[token] > operatorRank[stackPop] {
+		return true
+	}
+	return false
+}
+
 // stackOperator performs the operation on the stack
 func (c Calculator) stackOperator(token string) ([]string, []string) {
 	if len(c.stack) == 0 || c.stack[len(c.stack)-1] == "(" || token == "(" {
@@ -515,14 +508,6 @@ func (c Calculator) stackOperator(token string) ([]string, []string) {
 		c.stack = append(c.stack, token)
 	}
 	return c.stack, c.postfixExpr
-}
-
-// higherPrecedence returns true if the first symbol has higher precedence than the second
-func higherPrecedence(stackPop, token string) bool {
-	if stackPop == "(" || operatorRank[token] > operatorRank[stackPop] {
-		return true
-	}
-	return false
 }
 
 func main() {

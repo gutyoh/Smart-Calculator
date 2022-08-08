@@ -4,7 +4,7 @@ package main
 [Smart Calculator - Stage 5/7: Error!](https://hyperskill.org/projects/74/stages/413/implement)
 -------------------------------------------------------------------------------
 [String search](https://hyperskill.org/learn/topic/2063)
-[Introduction to Regexp package](https://hyperskill.org/learn/step/19844)
+[Type casting and type switching] -- TODO!
 */
 
 import (
@@ -46,9 +46,6 @@ func isNumeric(s string) bool {
 
 // isAlpha checks if all the characters in the string are alphabet letters
 func isAlpha(s string) bool {
-	//re := regexp.MustCompile("^[a-zA-Z]+$")
-	//return re.MatchString(s)
-
 	if s == "" {
 		return false
 	}
