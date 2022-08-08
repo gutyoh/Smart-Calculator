@@ -134,6 +134,21 @@ func checkAssignment(s string) bool {
 	return strings.Contains(s, "=")
 }
 
+func (c Calculator) checkStackElements() bool {
+	counter := 0
+	// check if the stack contains exactly two numeric elements
+	for _, element := range c.stack {
+		if isNumeric(element) {
+			counter++
+		}
+	}
+
+	if counter == 2 {
+		return true
+	}
+	return false
+}
+
 // The assign function assigns a value to a variable and stores it in the calculator memory
 func (c Calculator) assign(line string) {
 	variable, value := func(s []string) (string, string) {
@@ -214,25 +229,50 @@ func validateExpression(line string) bool {
 // getTotal calculates the total result of the postfixExpr infixExpr
 func (c Calculator) getTotal() int {
 	var a, b string
-	var sign = 1
+	// var sign = 1
+	var end = 0
+	var sign string
 
-	// TODO - Fix this logic to handle multiple "-" or "+" symbols as the first
-	// symbols in the expression, like: ++10++10--8 or --10--10--8
+	// TODO - handle single numbers with multiple "---" signs in front
+	if len(c.postfixExpr) == 1 {
+		x, _ := strconv.Atoi(c.postfixExpr[0])
+		return x
+	}
+
+	if len(c.postfixExpr) == 2 {
+		temp := c.postfixExpr[0] + c.postfixExpr[1]
+		x, _ := strconv.Atoi(temp)
+		return x
+	}
+
+	// check for the first negative sign
 	for _, token := range c.postfixExpr {
-		if strings.Contains(token, "-") {
-			if strings.Count(token, "-")%2 == 1 {
-				sign *= -1
-				if len(c.stack) < 1 {
-					continue
-				}
-			}
+		if isNumeric(token) {
+			c.postfixExpr = c.postfixExpr[end:]
+			break
+		}
+		if token == "-" {
+			sign = "-"
+			end += 1
+		}
+	}
+
+	// TODO - Fix this logic to handle multiple "-" or "+" symbols as the first - DONE
+	// symbols in the expression, like: ++10++10--8 or --10--10--8
+	for i, token := range c.postfixExpr {
+		if sign == "-" && i == len(c.postfixExpr)-1 && c.postfixExpr[i] == "-" {
+			c.stack[1] = "-" + c.stack[1]
 		}
 
-		if isNumeric(token) {
-			c.stack = append(c.stack, token)
+		if isNumeric(token) && i < len(c.postfixExpr)-1 {
+			if sign != "" && isNumeric(c.postfixExpr[i+1]) || end >= 2 {
+				c.stack = append(c.stack, sign+token)
+				sign = ""
+			} else {
+				c.stack = append(c.stack, token)
+			}
 		} else if len(c.stack) > 1 {
 			b, a = pop(&c.stack), pop(&c.stack)
-
 			x, _ := strconv.Atoi(a)
 			y, _ := strconv.Atoi(b)
 
@@ -456,12 +496,23 @@ func (c Calculator) getPostfix(expression []Expression) []string {
 		}
 	}
 
+	// TODO fix this logic to properly handle parenthesis operations like: 4*2+5*3+6*(2+3) or 4*2+5*3+6*((2+3))
+	// or ((10+10)) * 8 and (10+10) * 8 or ((10+10) / (3 + 5) * 8) + 5
 	for _, token := range c.stack {
 		if len(c.stack) == 0 {
 			break
 		} else if token != "(" && token != ")" {
-			c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
+			if pop(&c.stack) != "(" || pop(&c.stack) != ")" {
+				c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
+			}
+		} else if token == "(" || token == ")" {
+			pop(&c.stack)
 		} else {
+			// pop(&c.stack)
+			// if the last element of the stack is not "(" or ")" then append it to the postfixExpr
+			if len(c.stack) > 0 && c.stack[len(c.stack)-1] != "(" && c.stack[len(c.stack)-1] != ")" {
+				c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
+			}
 			pop(&c.stack)
 		}
 	}
