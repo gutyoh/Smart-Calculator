@@ -228,28 +228,39 @@ func validateExpression(line string) bool {
 
 // getTotal calculates the total result of the postfixExpr infixExpr
 func (c Calculator) getTotal() int {
-	var a, b string
+	// var a, b string
 	// var sign = 1
-	var end, minusCount = 0, 0
+	var end = 0
+	var minusCount = 0
 	var sign string
+	var plusCount = 0
 
 	// Check if c.postfixExpr starts with a negative sign to validate cases like: --10++10--8 or -10+10+8
-	for _, token := range c.postfixExpr {
+	for i, token := range c.postfixExpr {
 		if isNumeric(token) {
 			c.postfixExpr = c.postfixExpr[end:]
+
+			if end == 1 && c.postfixExpr[i] != "-" && minusCount > plusCount {
+				sign = "-"
+			} else if end > 1 && c.postfixExpr[i-1] == "-" {
+				if end%2 == 0 {
+					sign = "-"
+				}
+			}
 			break
 		}
 		if token == "-" {
-			sign = "-"
+			// sign = "-"
 			end += 1
 			minusCount += 1
 		} else if token == "+" {
 			end += 1
+			plusCount += 1
 			continue
 		}
 	}
 
-	if c.postfixExpr[len(c.postfixExpr)-1] == "-" {
+	if c.postfixExpr[len(c.postfixExpr)-1] == "-" && c.postfixExpr[1] == "-" {
 		minusCount += 1
 	}
 
@@ -267,24 +278,39 @@ func (c Calculator) getTotal() int {
 
 	// TODO - Fix this logic to handle multiple "-" or "+" symbols as the first - DONE
 	// symbols in the expression, like: ++10++10--8 or --10--10--8
-	for i, token := range c.postfixExpr {
-		if sign == "-" && i == len(c.postfixExpr)-1 && c.postfixExpr[i] == "-" {
-			c.stack[1] = "-" + c.stack[1]
+	for i, _ := range c.postfixExpr {
+		if i < len(c.postfixExpr)-2 {
+			if c.postfixExpr[i] == "-" && c.postfixExpr[i+1] == "-" {
+				c.postfixExpr = append(c.postfixExpr[:i], c.postfixExpr[i+1:]...)
+				c.postfixExpr[i] = "+"
+			}
 		}
 
-		if isNumeric(token) && i < len(c.postfixExpr)-1 {
-			if sign != "" && isNumeric(c.postfixExpr[i+1]) || end >= 2 {
-				c.stack = append(c.stack, sign+token)
-				sign = ""
-			} else {
-				c.stack = append(c.stack, token)
+		if i == len(c.postfixExpr)-1 {
+			if c.postfixExpr[i] == "-" && minusCount > 1 {
+				c.postfixExpr[i] = "+"
 			}
+		}
+	}
+
+	for _, token := range c.postfixExpr {
+		if isNumeric(token) {
+			c.stack = append(c.stack, sign+token)
+			sign = ""
 		} else if len(c.stack) > 1 {
-			b, a = pop(&c.stack), pop(&c.stack)
+			b, a := pop(&c.stack), pop(&c.stack)
 			x, _ := strconv.Atoi(a)
 			y, _ := strconv.Atoi(b)
 
-			c.stack = append(c.stack, strconv.Itoa(evalSymbol(x, y, token)))
+			// c.stack = append(c.stack, strconv.Itoa(evalSymbol(x, y, token)))
+
+			// TODO -- 1 +++ 2 * 3 -- 4 = 11 <-- test case fails prints 3
+
+			if (end > 1 || end%2 == 1) && c.postfixExpr[len(c.postfixExpr)-1] == "-" && minusCount < 1 {
+				c.stack = append(c.stack, strconv.Itoa(evalSymbol(x, y, "+")))
+			} else {
+				c.stack = append(c.stack, strconv.Itoa(evalSymbol(x, y, token)))
+			}
 		}
 	}
 

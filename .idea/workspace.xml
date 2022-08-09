@@ -55,7 +55,7 @@
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
 }</component>
-  <component name="RunManager" selected="Python.tests">
+  <component name="RunManager" selected="Go Build.go build main.go (1)">
     <configuration name="go build main.go (1)" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="Smart-Calculator" />
       <working_directory value="$PROJECT_DIR$" />
@@ -138,8 +138,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.tests" />
         <item itemvalue="Go Build.go build main.go (1)" />
+        <item itemvalue="Python.tests" />
         <item itemvalue="Go Build.go build main.go (3)" />
         <item itemvalue="Python.sol2" />
         <item itemvalue="Python.sol" />
@@ -187,7 +187,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/stage7/main.go</url>
-          <line>540</line>
+          <line>566</line>
           <option name="timeStamp" value="213" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
@@ -197,23 +197,23 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/stage7/main.go</url>
-          <line>617</line>
+          <line>643</line>
           <option name="timeStamp" value="219" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/stage7/main.go</url>
-          <line>459</line>
+          <line>485</line>
           <option name="timeStamp" value="220" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/stage7/main.go</url>
-          <line>256</line>
-          <option name="timeStamp" value="225" />
+          <line>295</line>
+          <option name="timeStamp" value="239" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/stage7/main.go</url>
-          <line>236</line>
-          <option name="timeStamp" value="226" />
+          <line>308</line>
+          <option name="timeStamp" value="248" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/stage7/temp/sol.py</url>
@@ -240,7 +240,11 @@
         <watch expression="c.expression" language="go" />
         <watch expression="c.stack" language="go" />
         <watch expression="end%2" language="go" />
+        <watch expression="c.postfixExpr[i]" language="go" />
         <watch expression="minusCount%2" language="go" />
+        <watch expression="c.postfixExpr[i-1]" language="go" />
+        <watch expression="c.postfixExpr[i-2]" language="go" />
+        <watch expression="mc%2" language="go" />
       </configuration>
       <configuration name="PythonConfigurationType">
         <watch expression="list(user_input)" language="Python" />
@@ -248,14 +252,20 @@
       <inline-watch fileUrl="file://$PROJECT_DIR$/stage7/main.go" line="164">
         <watch expression="strings.Join(c.postfixExpr, &quot;&quot;)" />
       </inline-watch>
-      <inline-watch fileUrl="file://$PROJECT_DIR$/stage7/main.go" line="412">
-        <watch expression="i" />
+      <inline-watch fileUrl="file://$PROJECT_DIR$/stage7/main.go" line="244">
+        <watch expression="c.postfixExpr[i-1]" />
       </inline-watch>
       <inline-watch fileUrl="file://$PROJECT_DIR$/stage7/main.go" line="64">
         <watch expression="s" />
       </inline-watch>
+      <inline-watch fileUrl="file://$PROJECT_DIR$/stage7/main.go" line="242">
+        <watch expression="c.postfixExpr[i]" language="go" />
+      </inline-watch>
       <inline-watch fileUrl="file://$PROJECT_DIR$/stage7/main.go" line="64">
         <watch expression="x" />
+      </inline-watch>
+      <inline-watch fileUrl="file://$PROJECT_DIR$/stage7/main.go" line="438">
+        <watch expression="i" />
       </inline-watch>
     </watches-manager>
   </component>
