@@ -230,22 +230,10 @@ func validateExpression(line string) bool {
 func (c Calculator) getTotal() int {
 	var a, b string
 	// var sign = 1
-	var end = 0
+	var end, minusCount = 0, 0
 	var sign string
 
-	// TODO - handle single numbers with multiple "---" signs in front
-	if len(c.postfixExpr) == 1 {
-		x, _ := strconv.Atoi(c.postfixExpr[0])
-		return x
-	}
-
-	if len(c.postfixExpr) == 2 {
-		temp := c.postfixExpr[0] + c.postfixExpr[1]
-		x, _ := strconv.Atoi(temp)
-		return x
-	}
-
-	// check for the first negative sign
+	// Check if c.postfixExpr starts with a negative sign to validate cases like: --10++10--8 or -10+10+8
 	for _, token := range c.postfixExpr {
 		if isNumeric(token) {
 			c.postfixExpr = c.postfixExpr[end:]
@@ -254,7 +242,27 @@ func (c Calculator) getTotal() int {
 		if token == "-" {
 			sign = "-"
 			end += 1
+			minusCount += 1
+		} else if token == "+" {
+			end += 1
+			continue
 		}
+	}
+
+	if c.postfixExpr[len(c.postfixExpr)-1] == "-" {
+		minusCount += 1
+	}
+
+	// If c.postfixExpr is only a single number, return the number
+	if len(c.postfixExpr) == 1 {
+		x, _ := strconv.Atoi(sign + c.postfixExpr[0])
+		return x
+	} else if len(c.postfixExpr) == 2 && minusCount%2 == 1 {
+		x, _ := strconv.Atoi("-" + c.postfixExpr[0])
+		return x
+	} else if len(c.postfixExpr) == 2 && minusCount%2 == 0 {
+		x, _ := strconv.Atoi(c.postfixExpr[0])
+		return x
 	}
 
 	// TODO - Fix this logic to handle multiple "-" or "+" symbols as the first - DONE
@@ -496,25 +504,38 @@ func (c Calculator) getPostfix(expression []Expression) []string {
 		}
 	}
 
+	// if the stack has any "(" or ")" remaining, remove them
+	for i := len(c.stack) - 1; i >= 0; i-- {
+		if c.stack[i] == "(" || c.stack[i] == ")" {
+			c.stack = append(c.stack[:i], c.stack[i+1:]...)
+		}
+	}
+
 	// TODO fix this logic to properly handle parenthesis operations like: 4*2+5*3+6*(2+3) or 4*2+5*3+6*((2+3))
 	// or ((10+10)) * 8 and (10+10) * 8 or ((10+10) / (3 + 5) * 8) + 5
 	for _, token := range c.stack {
 		if len(c.stack) == 0 {
 			break
-		} else if token != "(" && token != ")" {
-			if pop(&c.stack) != "(" || pop(&c.stack) != ")" {
-				c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
-			}
-		} else if token == "(" || token == ")" {
-			pop(&c.stack)
 		} else {
-			// pop(&c.stack)
-			// if the last element of the stack is not "(" or ")" then append it to the postfixExpr
-			if len(c.stack) > 0 && c.stack[len(c.stack)-1] != "(" && c.stack[len(c.stack)-1] != ")" {
-				c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
-			}
-			pop(&c.stack)
+			c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
+			fmt.Sprintln(token)
 		}
+
+		//if len(c.stack) == 0 {
+		//	break
+		//} else if token != "(" && token != ")" {
+		//	if pop(&c.stack) != "(" || pop(&c.stack) != ")" {
+		//		c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
+		//	}
+		//} else if token == "(" || token == ")" {
+		//	pop(&c.stack)
+		//} else {
+		//	// if the last element of the stack is not "(" or ")" then append it to the postfixExpr
+		//	if len(c.stack) > 0 && c.stack[len(c.stack)-1] != "(" && c.stack[len(c.stack)-1] != ")" {
+		//		c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
+		//	}
+		//	pop(&c.stack)
+		//}
 	}
 
 	return c.postfixExpr
