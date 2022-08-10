@@ -7,6 +7,8 @@
     <list default="true" id="96a21561-463b-4603-9205-7ed0522a85a7" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/stage7/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/stage7/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stage7/task-info.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/stage7/task-info.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stage7/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/stage7/temp/tests_original.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,23 +41,40 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.format.on.save.advertiser.fired&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.watchers.conflict.with.on.save.actions.check.performed&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
-    &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/mrgut&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.go.format.on.save.advertiser.fired": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
+    "RunOnceActivity.go.watchers.conflict.with.on.save.actions.check.performed": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "go.import.settings.migrated": "true",
+    "go.sdk.automatically.set": "true",
+    "last_opened_file_path": "C:/Users/mrgut/hs-test/hs-test-python-9.tar.gz",
+    "settings.editor.selected.configurable": "preferences.lookFeel"
   }
-}</component>
-  <component name="RunManager" selected="Go Build.go build main.go (1)">
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\mrgut\Documents\Smart-Calculator\stage7\temp" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\mrgut\Documents\Smart-Calculator\stage7" />
+      <recent name="C:\Users\mrgut\Documents\Smart-Calculator\stage7\temp" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.tests">
+    <configuration name="go build main2.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="Smart-Calculator" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/stage7/temp/main2.go" />
+      <method v="2" />
+    </configuration>
     <configuration name="go build main.go (1)" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="Smart-Calculator" />
       <working_directory value="$PROJECT_DIR$" />
@@ -64,15 +83,7 @@
       <filePath value="$PROJECT_DIR$/stage7/main.go" />
       <method v="2" />
     </configuration>
-    <configuration name="go build main.go (3)" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
-      <module name="Smart-Calculator" />
-      <working_directory value="$PROJECT_DIR$" />
-      <kind value="FILE" />
-      <directory value="$PROJECT_DIR$" />
-      <filePath value="$PROJECT_DIR$/stage6/main.go" />
-      <method v="2" />
-    </configuration>
-    <configuration name="sol" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="stage_test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Smart-Calculator" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -80,33 +91,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/stage7/temp" />
+      <option name="WORKING_DIRECTORY" value="$USER_HOME$/PycharmProjects/Smart Calculator/.idea/VirtualEnvironment/Lib/site-packages/hstest/stage" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/stage7/temp/sol.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="sol2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Smart-Calculator" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/stage7/temp" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/stage7/temp/sol2.py" />
+      <option name="SCRIPT_NAME" value="$USER_HOME$/PycharmProjects/Smart Calculator/.idea/VirtualEnvironment/Lib/site-packages/hstest/stage/stage_test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -136,13 +125,34 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="tests_original" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Smart-Calculator" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/stage7" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="C:\Users\mrgut\Documents\Smart-Calculator\stage7\temp\tests_original.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Go Build.go build main.go (1)" />
         <item itemvalue="Python.tests" />
-        <item itemvalue="Go Build.go build main.go (3)" />
-        <item itemvalue="Python.sol2" />
-        <item itemvalue="Python.sol" />
+        <item itemvalue="Go Build.go build main.go (1)" />
+        <item itemvalue="Python.stage_test" />
+        <item itemvalue="Python.tests_original" />
+        <item itemvalue="Go Build.go build main2.go" />
       </list>
     </recent_temporary>
   </component>
@@ -181,49 +191,39 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/stage6/main.go</url>
-          <line>263</line>
-          <option name="timeStamp" value="136" />
+          <url>file://$PROJECT_DIR$/stage7/main.go</url>
+          <line>376</line>
+          <option name="timeStamp" value="5" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/stage7/main.go</url>
-          <line>566</line>
-          <option name="timeStamp" value="213" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/stage6/main.go</url>
-          <line>258</line>
-          <option name="timeStamp" value="218" />
+          <line>701</line>
+          <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/stage7/main.go</url>
-          <line>643</line>
-          <option name="timeStamp" value="219" />
+          <line>348</line>
+          <option name="timeStamp" value="16" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/stage7/main.go</url>
-          <line>485</line>
-          <option name="timeStamp" value="220" />
+          <line>355</line>
+          <option name="timeStamp" value="19" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/stage7/main.go</url>
-          <line>295</line>
-          <option name="timeStamp" value="239" />
+          <line>278</line>
+          <option name="timeStamp" value="20" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/stage7/main.go</url>
-          <line>308</line>
-          <option name="timeStamp" value="248" />
+          <line>352</line>
+          <option name="timeStamp" value="21" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/stage7/temp/sol.py</url>
-          <line>46</line>
-          <option name="timeStamp" value="187" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/stage7/temp/sol2.py</url>
-          <line>165</line>
-          <option name="timeStamp" value="199" />
+          <url>file://$PROJECT_DIR$/stage7/tests.py</url>
+          <line>338</line>
+          <option name="timeStamp" value="22" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -232,6 +232,7 @@
             <option name="notifyOnTerminate" value="true" />
           </properties>
         </breakpoint>
+        <breakpoint type="DlvErrorBreakpoint" />
       </default-breakpoints>
     </breakpoint-manager>
     <watches-manager>
@@ -239,33 +240,26 @@
         <watch expression="c.postfixExpr" language="go" />
         <watch expression="c.expression" language="go" />
         <watch expression="c.stack" language="go" />
+        <watch expression="prevSign" language="go" />
         <watch expression="end%2" language="go" />
         <watch expression="c.postfixExpr[i]" language="go" />
         <watch expression="minusCount%2" language="go" />
         <watch expression="c.postfixExpr[i-1]" language="go" />
         <watch expression="c.postfixExpr[i-2]" language="go" />
         <watch expression="mc%2" language="go" />
+        <watch expression="tokens" />
       </configuration>
       <configuration name="PythonConfigurationType">
         <watch expression="list(user_input)" language="Python" />
       </configuration>
-      <inline-watch fileUrl="file://$PROJECT_DIR$/stage7/main.go" line="164">
-        <watch expression="strings.Join(c.postfixExpr, &quot;&quot;)" />
+      <inline-watch fileUrl="file://$PROJECT_DIR$/stage7/main.go" line="352">
+        <watch expression="token[1:]" />
       </inline-watch>
-      <inline-watch fileUrl="file://$PROJECT_DIR$/stage7/main.go" line="244">
-        <watch expression="c.postfixExpr[i-1]" />
+      <inline-watch fileUrl="file://$PROJECT_DIR$/stage7/main.go" line="247">
+        <watch expression="token.Value" language="go" />
       </inline-watch>
-      <inline-watch fileUrl="file://$PROJECT_DIR$/stage7/main.go" line="64">
-        <watch expression="s" />
-      </inline-watch>
-      <inline-watch fileUrl="file://$PROJECT_DIR$/stage7/main.go" line="242">
-        <watch expression="c.postfixExpr[i]" language="go" />
-      </inline-watch>
-      <inline-watch fileUrl="file://$PROJECT_DIR$/stage7/main.go" line="64">
-        <watch expression="x" />
-      </inline-watch>
-      <inline-watch fileUrl="file://$PROJECT_DIR$/stage7/main.go" line="438">
-        <watch expression="i" />
+      <inline-watch fileUrl="file://$PROJECT_DIR$/stage7/main.go" line="249">
+        <watch expression="c.expression[i+1].Value" />
       </inline-watch>
     </watches-manager>
   </component>

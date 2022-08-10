@@ -96,6 +96,10 @@ func isSymbol(token string) bool {
 	return sliceContains(symbols, token)
 }
 
+func isParenthesis(token string) bool {
+	return token == "(" || token == ")"
+}
+
 func isValid(end int) bool {
 	return end != 0
 }
@@ -176,7 +180,6 @@ func (c Calculator) assign(line string) {
 	return
 }
 
-// processCommand checks if the input is command is either "/exit" or "/help" and if not reports an error.
 func processCommand(line string) {
 	if line != "/exit" && line != "/help" {
 		fmt.Println("Unknown command")
@@ -184,7 +187,7 @@ func processCommand(line string) {
 	}
 }
 
-// checkParenthesis checks if there are the same amount of parenthesis on both sides of the infixExpr
+// checkParentheses checks if there are the same amount of parenthesis in the infixExpr
 func checkParenthesis(line string) bool {
 	return strings.Count(line, "(") != strings.Count(line, ")")
 }
@@ -223,6 +226,105 @@ func validateExpression(line string) bool {
 	return false
 }
 
+// getTotal calculates the total result of the postfixExpr infixExpr
+func (c Calculator) getTotal() int {
+	// var a, b string
+	// var sign = 1
+	var end = 0
+	var minusCount = 0
+	var sign string
+	var plusCount = 0
+
+	// Check if c.postfixExpr starts with a negative sign to validate cases like: --10++10--8 or -10+10+8
+	for i, token := range c.postfixExpr {
+		if isNumeric(token) {
+			c.postfixExpr = c.postfixExpr[end:]
+
+			if end == 1 && c.postfixExpr[i] != "-" && minusCount > plusCount {
+				sign = "-"
+			} else if end > 1 && c.postfixExpr[i-1] == "-" {
+				if end%2 == 0 {
+					sign = "-"
+				}
+			}
+			break
+		}
+		if token == "-" {
+			// sign = "-"
+			end += 1
+			minusCount += 1
+		} else if token == "+" {
+			end += 1
+			plusCount += 1
+			continue
+		}
+	}
+
+	if c.postfixExpr[len(c.postfixExpr)-1] == "-" && c.postfixExpr[1] == "-" {
+		minusCount += 1
+	}
+
+	// If c.postfixExpr is only a single number, return the number
+	if len(c.postfixExpr) == 1 {
+		x, _ := strconv.Atoi(sign + c.postfixExpr[0])
+		return x
+	} else if len(c.postfixExpr) == 2 && minusCount%2 == 1 {
+		x, _ := strconv.Atoi("-" + c.postfixExpr[0])
+		return x
+	} else if len(c.postfixExpr) == 2 && minusCount%2 == 0 {
+		x, _ := strconv.Atoi(c.postfixExpr[0])
+		return x
+	}
+
+	// TODO - Fix this logic to handle multiple "-" or "+" symbols as the first - DONE
+	// symbols in the expression, like: ++10++10--8 or --10--10--8
+	for i, _ := range c.postfixExpr {
+		if i < len(c.postfixExpr)-2 {
+			if c.postfixExpr[i] == "-" && c.postfixExpr[i+1] == "-" && c.postfixExpr[len(c.postfixExpr)-1] != "+" {
+				c.postfixExpr = append(c.postfixExpr[:i], c.postfixExpr[i+1:]...)
+				c.postfixExpr[i] = "+"
+			}
+		}
+
+		if i == len(c.postfixExpr)-1 {
+			if c.postfixExpr[i] == "-" && minusCount > 1 {
+				c.postfixExpr[i] = "+"
+			}
+
+			if c.postfixExpr[i] == "-" && isNumeric(c.postfixExpr[i-1]) && c.postfixExpr[i-2] == "-" {
+				c.postfixExpr[i] = "+"
+			}
+		}
+	}
+
+	for _, token := range c.postfixExpr {
+		if isNumeric(token) {
+			c.stack = append(c.stack, sign+token)
+			sign = ""
+		} else if len(c.stack) > 1 {
+			b, a := pop(&c.stack), pop(&c.stack)
+			x, _ := strconv.Atoi(a)
+			y, _ := strconv.Atoi(b)
+
+			// c.stack = append(c.stack, strconv.Itoa(evalSymbol(x, y, token)))
+
+			// TODO -- 1 +++ 2 * 3 -- 4 = 11 <-- test case fails prints 3
+
+			if (end > 1 || end%2 == 1) && c.postfixExpr[len(c.postfixExpr)-1] == "-" && minusCount < 1 {
+				c.stack = append(c.stack, strconv.Itoa(evalSymbol(x, y, "+")))
+			} else {
+				c.stack = append(c.stack, strconv.Itoa(evalSymbol(x, y, token)))
+			}
+		}
+	}
+
+	if len(c.stack) > 0 {
+		x, _ := strconv.Atoi(pop(&c.stack))
+		return x
+	}
+	return 0
+}
+
 // evalSymbol evaluates the symbol and performs the operation accordingly
 func evalSymbol(a, b int, operator string) int {
 	switch operator {
@@ -241,207 +343,6 @@ func evalSymbol(a, b int, operator string) int {
 	}
 }
 
-func (c Calculator) checkSingleNum() int {
-	var singleNum []string
-	sign := 1
-
-	for i, token := range c.expression {
-		if isNumeric(token.Value) && i < len(c.expression)-1 {
-			if isSymbol(c.expression[i+1].Value) {
-				return 0
-			}
-		} else {
-			singleNum = append(singleNum, token.Value)
-		}
-	}
-
-	for _, token := range singleNum {
-		if token == "-" {
-			sign *= -1
-		}
-		if isNumeric(token) {
-			x, _ := strconv.Atoi(token)
-			return x * sign
-		}
-	}
-	return 0
-}
-
-// getTotal calculates the total result of postfixExpr
-func (c Calculator) getTotal() int {
-	var (
-		end, minusCount, mc int
-		// sign                       string
-		// prevSign, nextSign string
-	)
-
-	// Check if the expression is a single number or a single variable, if so return the value and exit
-	if c.checkSingleNum() == 0 {
-		for i, token := range c.postfixExpr {
-			if isNumeric(c.postfixExpr[0]) {
-				break
-			}
-
-			if isNumeric(token) {
-				c.postfixExpr = c.postfixExpr[end:]
-
-				// Check for cases with only one negative sign in front: -10-12--8
-				if minusCount == 1 && isNumeric(c.postfixExpr[i]) {
-					c.postfixExpr[0] = "-" + c.postfixExpr[0]
-					break
-				}
-
-				// Check for cases with two negatives sign in front: --10-12--8
-				if minusCount == 1 && !isNumeric(c.postfixExpr[i]) {
-					//c.postfixExpr[0] = "+" + c.postfixExpr[0]
-					// nextSign = c.postfixExpr[i]
-					break
-				}
-
-				// Check for cases with more than 3 negatives sign in front: ---10--12--8
-				if minusCount > 1 {
-					if minusCount%2 == 1 {
-						//c.postfixExpr[0] = "+" + c.postfixExpr[0]
-						break
-					} else if minusCount%2 == 0 && c.postfixExpr[i-2] == "+" {
-						break
-					} else {
-						c.postfixExpr[0] = "-" + c.postfixExpr[0]
-						break
-					}
-				}
-			}
-			if token == "-" {
-				end += 1
-				minusCount += 1
-			} else if token == "+" {
-				end += 1
-			}
-		}
-
-		mc = minusCount
-
-		//for i, _ := range c.postfixExpr {
-		//	if i < len(c.postfixExpr)-2 {
-		//		if c.postfixExpr[i] == "-" && nextSign != "-" && c.postfixExpr[i+1] == "-" && c.postfixExpr[len(c.postfixExpr)-1] != "+" {
-		//			c.postfixExpr = append(c.postfixExpr[:i], c.postfixExpr[i+1:]...)
-		//			prevSign = c.postfixExpr[i]
-		//			c.postfixExpr[i] = "+"
-		//		}
-		//	}
-		//
-		//	if i == len(c.postfixExpr)-1 {
-		//		if c.postfixExpr[i] == "-" && minusCount > 1 && prevSign != "-" /*&& (c.postfixExpr[i-2] != "+" || prevSign == "-")*/ {
-		//			c.postfixExpr[i] = "-"
-		//		}
-		//
-		//		if c.postfixExpr[i] == "-" && minusCount > 1 && prevSign == "-" {
-		//			c.postfixExpr[i] = "+"
-		//		}
-		//
-		//		if c.postfixExpr[i] == "-" && isNumeric(c.postfixExpr[i-1]) && c.postfixExpr[i-2] == "-" {
-		//			c.postfixExpr[i] = "+"
-		//		}
-		//	}
-		//}
-
-		// After checking for multiple negative signs, finally calculate the result of c.postfixExpr
-		for i, token := range c.postfixExpr {
-			if token == "-" && i <= len(c.postfixExpr)-1 {
-				mc += 1
-			}
-			if isNumeric(token) || isNumeric(token[1:]) {
-				c.stack = append(c.stack, token)
-			} else if len(c.stack) > 1 {
-				if mc%2 == 0 && mc != 0 && token != "*" && token != "/" && token != "^" {
-					token = "+"
-				}
-
-				b, a := pop(&c.stack), pop(&c.stack)
-				x, _ := strconv.Atoi(a)
-				y, _ := strconv.Atoi(b)
-
-				if (end > 1 || end%2 == 1) && c.postfixExpr[len(c.postfixExpr)-1] == "-" && minusCount < 1 {
-					c.stack = append(c.stack, strconv.Itoa(evalSymbol(x, y, "+")))
-				} else {
-					c.stack = append(c.stack, strconv.Itoa(evalSymbol(x, y, token)))
-				}
-				mc = 0
-			}
-		}
-	} else {
-		return c.checkSingleNum()
-	}
-
-	//// Check if c.postfixExpr starts with a negative sign to validate cases like: --10++10--8 or -10+10+8
-	//for _, token := range c.postfixExpr {
-	//	if isNumeric(token) {
-	//		c.postfixExpr = c.postfixExpr[end:]
-	//
-	//		if len(c.postfixExpr) == 1 && minusCount == 1 {
-	//			c.postfixExpr[0] = "-" + c.postfixExpr[0]
-	//			break
-	//		}
-	//
-	//		if len(c.postfixExpr) == 2 && minusCount == 1 && c.postfixExpr[len(c.postfixExpr)-1] == "-" {
-	//			break
-	//		} else if len(c.postfixExpr) == 2 && minusCount == 1 && c.postfixExpr[len(c.postfixExpr)-1] == "+" {
-	//			c.postfixExpr[0] = "-" + c.postfixExpr[0]
-	//			break
-	//		}
-	//
-	//		if len(c.postfixExpr) > 1 {
-	//			if minusCount != 0 && minusCount%2 == 0 && c.postfixExpr[len(c.postfixExpr)-1] == "-" {
-	//				c.postfixExpr[0] = "-" + c.postfixExpr[0]
-	//				break
-	//			}
-	//			if end > 1 && c.postfixExpr[len(c.postfixExpr)-1] == "-" {
-	//				if minusCount%2 == 0 {
-	//					c.postfixExpr[0] = "-" + c.postfixExpr[0]
-	//					break
-	//				}
-	//			} else if minusCount%2 == 1 && c.postfixExpr[len(c.postfixExpr)-1] == "+" {
-	//				c.postfixExpr[0] = "-" + c.postfixExpr[0]
-	//				break
-	//			}
-	//		}
-	//		break
-	//	}
-	//	if token == "-" {
-	//		end += 1
-	//		minusCount += 1
-	//	} else if token == "+" {
-	//		end += 1
-	//		plusCount += 1
-	//	}
-	//}
-	//
-	//if c.postfixExpr[len(c.postfixExpr)-1] == "-" && c.postfixExpr[1] == "-" {
-	//	minusCount += 1
-	//}
-	//
-	//// If c.postfixExpr is only a single number, return the number
-	//if len(c.postfixExpr) == 1 {
-	//	// x, _ := strconv.Atoi(sign + c.postfixExpr[0])
-	//	x, _ := strconv.Atoi(c.postfixExpr[0])
-	//	return x
-	//} else if len(c.postfixExpr) == 2 && minusCount%2 == 1 {
-	//	// x, _ := strconv.Atoi("-" + c.postfixExpr[0])
-	//	x, _ := strconv.Atoi(c.postfixExpr[0])
-	//	return x
-	//} else if len(c.postfixExpr) == 2 && minusCount%2 == 0 {
-	//	x, _ := strconv.Atoi(c.postfixExpr[0])
-	//	return x
-	//}
-
-	if len(c.stack) > 0 {
-		x, _ := strconv.Atoi(pop(&c.stack))
-		return x
-	}
-	return 0
-}
-
-// parseNumber parses a number with multiple digits from the input line
 func parseNumber(line string) (string, int) {
 	var number string
 	var end int
@@ -455,7 +356,6 @@ func parseNumber(line string) (string, int) {
 	return number, end
 }
 
-// parseSymbol parses the symbols: "+", "-", "*", "/", "(", ")", "^" from the input line
 func parseSymbol(line string) (string, int) {
 	var symbol string
 	var end int
@@ -469,7 +369,19 @@ func parseSymbol(line string) (string, int) {
 	return symbol, end
 }
 
-// parseVariable parses a more-than-one-character variable from the input line
+func parseParenthesis(line string) (string, int) {
+	var parenthesis string
+	var end int
+	for i, token := range line {
+		if isParenthesis(string(token)) {
+			parenthesis += string(token)
+			end = i + 1
+			break
+		}
+	}
+	return parenthesis, end
+}
+
 func parseVariable(line string) (string, int) {
 	var variable string
 	var end int
@@ -483,7 +395,6 @@ func parseVariable(line string) (string, int) {
 	return variable, end
 }
 
-// getVarValue returns the value of the variable if it's in the memory of the Calculator
 func (c Calculator) getVarValue(variable string) string {
 	if !mapContains(c.memory, variable) {
 		fmt.Println("Unknown variable")
@@ -492,13 +403,15 @@ func (c Calculator) getVarValue(variable string) string {
 	return strconv.Itoa(c.memory[variable])
 }
 
-func (c Calculator) appendValues(line string) []Expression {
-	var (
-		number /*parenthesis,*/, symbol string
-		varName, varValue               string
-		tokens                          []string
-		end                             int
-	)
+func (c Calculator) processLine(line string) {
+	var tokens []string
+	var number, parenthesis, symbol, varName, varValue string
+	var end int
+
+	if !validateExpression(line) {
+		fmt.Println("Invalid expression")
+		return
+	}
 
 	line = strings.Replace(line, " ", "", -1)
 	tokens = strings.Split(line, "")
@@ -513,25 +426,22 @@ func (c Calculator) appendValues(line string) []Expression {
 			if isValid(end) {
 				line = line[end:]
 				c.expression = append(c.expression, Expression{Number, number})
-				continue
-			}
-			if i == len(tokens)-1 {
-				c.expression = append(c.expression, Expression{Number, number})
-				break
 			}
 		}
 
 		if isSymbol(token) {
 			symbol, end = parseSymbol(line)
-			if isValid(end) {
+			if isValid(end) && symbol != "(" && symbol != ")" {
 				line = line[end:]
 				c.expression = append(c.expression, Expression{Symbol, symbol})
-				continue
 			}
+		}
 
-			if i == len(tokens)-1 /*&& end != 1*/ {
-				c.expression = append(c.expression, Expression{Symbol, symbol})
-				break
+		if isParenthesis(token) {
+			parenthesis, end = parseParenthesis(line)
+			if isValid(end) {
+				line = line[end:]
+				c.expression = append(c.expression, Expression{Symbol, parenthesis})
 			}
 		}
 
@@ -542,34 +452,44 @@ func (c Calculator) appendValues(line string) []Expression {
 				varValue = c.getVarValue(varName)
 				if varValue != "" {
 					c.expression = append(c.expression, Expression{Number, varValue})
-					continue
 				}
 			}
-			if i == len(tokens)-1 {
-				varValue = c.getVarValue(varName)
+		}
+
+		// Append the last number, or last variable to the expression
+		if i == len(tokens)-1 && isNumeric(token) {
+			number, end = parseNumber(line)
+			if number != "" {
+				c.expression = append(c.expression, Expression{Number, number})
+			}
+		}
+
+		if i == len(tokens)-1 && isSymbol(token) {
+			symbol, end = parseSymbol(line)
+			if symbol != "" {
+				c.expression = append(c.expression, Expression{Symbol, symbol})
+			}
+		}
+
+		if i == len(tokens)-1 && isParenthesis(token) {
+			parenthesis, end = parseParenthesis(line)
+			if parenthesis != "" {
+				c.expression = append(c.expression, Expression{Symbol, parenthesis})
+			}
+		}
+
+		if i == len(tokens)-1 && isAlpha(token) {
+			varName, end = parseVariable(line)
+			varValue = c.getVarValue(varName)
+			if varValue != "" {
 				c.expression = append(c.expression, Expression{Number, varValue})
-				break
 			}
 		}
 	}
-	return c.expression
-}
 
-// processLine is the main function that processes the input line and returns the result
-func (c Calculator) processLine(line string) {
-	if !validateExpression(line) {
-		fmt.Println("Invalid expression")
-		return
-	}
-
-	c.expression = c.appendValues(line)
-
-	if len(c.expression) > 0 {
+	if len(c.expression) > 0 && c.getPostfix(c.expression) != nil {
 		c.postfixExpr = c.getPostfix(c.expression)
-		if c.postfixExpr != nil {
-			fmt.Println(c.getTotal())
-		}
-		return
+		fmt.Println(c.getTotal())
 	}
 }
 
@@ -614,16 +534,21 @@ func (c Calculator) getPostfix(expression []Expression) []string {
 		}
 	}
 
-	// if the stack has any remaining parenthesis "(" or ")", remove them:
+	// if the stack has any "(" or ")" remaining, remove them
 	for i := len(c.stack) - 1; i >= 0; i-- {
 		if c.stack[i] == "(" || c.stack[i] == ")" {
 			c.stack = append(c.stack[:i], c.stack[i+1:]...)
 		}
 	}
 
-	// iterate until c.stack is empty
-	for len(c.stack) > 0 {
-		c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
+	// TODO -- Remove sprintln(token)
+	for _, token := range c.stack {
+		if len(c.stack) == 0 {
+			break
+		} else {
+			c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
+			fmt.Sprintln(token)
+		}
 	}
 
 	return c.postfixExpr
@@ -658,8 +583,12 @@ func (c Calculator) stackOperator(token string) ([]string, []string) {
 	if higherPrecedence(c.stack[len(c.stack)-1], token) {
 		c.stack = append(c.stack, token)
 	} else {
-		for len(c.stack) > 0 && !higherPrecedence(c.stack[len(c.stack)-1], token) {
-			c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
+		for {
+			if len(c.stack) > 0 && !higherPrecedence(c.stack[len(c.stack)-1], token) {
+				c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
+			} else {
+				break
+			}
 		}
 		c.stack = append(c.stack, token)
 	}
