@@ -290,6 +290,10 @@ func (c Calculator) getTotal() int {
 			if c.postfixExpr[i] == "-" && minusCount > 1 {
 				c.postfixExpr[i] = "+"
 			}
+
+			if c.postfixExpr[i] == "-" && isNumeric(c.postfixExpr[i-1]) && c.postfixExpr[i-2] == "-" {
+				c.postfixExpr[i] = "+"
+			}
 		}
 	}
 
@@ -537,8 +541,7 @@ func (c Calculator) getPostfix(expression []Expression) []string {
 		}
 	}
 
-	// TODO fix this logic to properly handle parenthesis operations like: 4*2+5*3+6*(2+3) or 4*2+5*3+6*((2+3))
-	// or ((10+10)) * 8 and (10+10) * 8 or ((10+10) / (3 + 5) * 8) + 5
+	// TODO -- Remove sprintln(token)
 	for _, token := range c.stack {
 		if len(c.stack) == 0 {
 			break
@@ -546,22 +549,6 @@ func (c Calculator) getPostfix(expression []Expression) []string {
 			c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
 			fmt.Sprintln(token)
 		}
-
-		//if len(c.stack) == 0 {
-		//	break
-		//} else if token != "(" && token != ")" {
-		//	if pop(&c.stack) != "(" || pop(&c.stack) != ")" {
-		//		c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
-		//	}
-		//} else if token == "(" || token == ")" {
-		//	pop(&c.stack)
-		//} else {
-		//	// if the last element of the stack is not "(" or ")" then append it to the postfixExpr
-		//	if len(c.stack) > 0 && c.stack[len(c.stack)-1] != "(" && c.stack[len(c.stack)-1] != ")" {
-		//		c.postfixExpr = append(c.postfixExpr, pop(&c.stack))
-		//	}
-		//	pop(&c.stack)
-		//}
 	}
 
 	return c.postfixExpr
