@@ -122,35 +122,21 @@ func processLine(line string) {
 		token := line[0]
 		switch {
 		case string(token) == " ":
-			line = line[1:]
-			continue
+			end = 1
 		case isNumeric(string(token)):
 			number, end = parseNumber(line)
-			if isValid(end) {
-				line = line[end:]
-				expression = append(expression, Expression{Number, number})
-				continue
-			} else if len(line) >= 1 {
-				expression = append(expression, Expression{Number, number})
-				line = line[len(line):]
-				break
-			}
+			expression = append(expression, Expression{Number, number})
 		case isSign(string(token)):
 			sign, end = parseSign(line)
-			if isValid(end) {
-				line = line[end:]
-				expression = append(expression, Expression{Sign, sign})
-				continue
-			} else if len(line) >= 1 {
-				expression = append(expression, Expression{Number, number})
-				line = line[len(line):]
-				break
-			}
-			break
+			expression = append(expression, Expression{Sign, sign})
 		default:
 			fmt.Println("Invalid expression")
 			return
 		}
+		if !isValid(end) {
+			break
+		}
+		line = line[end:]
 	}
 
 	if len(expression) > 0 {

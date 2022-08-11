@@ -272,49 +272,28 @@ func (c Calculator) appendValues(line string) []Expression {
 		token := line[0]
 		switch {
 		case string(token) == " ":
-			line = line[1:]
-			continue
+			end = 1
 		case isNumeric(string(token)):
 			number, end = parseNumber(line)
-			if isValid(end) {
-				line = line[end:]
-				c.expression = append(c.expression, Expression{Number, number})
-				continue
-			} else if len(line) >= 1 {
-				c.expression = append(c.expression, Expression{Number, number})
-				line = line[len(line):]
-				break
-			}
+			c.expression = append(c.expression, Expression{Number, number})
 		case isSymbol(string(token)):
 			symbol, end = parseSymbol(line)
-			if isValid(end) {
-				line = line[end:]
-				c.expression = append(c.expression, Expression{Symbol, symbol})
-				continue
-			} else if len(line) >= 1 {
-				c.expression = append(c.expression, Expression{Symbol, symbol})
-				line = line[len(line):]
-				break
-			}
+			c.expression = append(c.expression, Expression{Symbol, symbol})
 		case isAlpha(string(token)):
 			varName, end = parseVariable(line)
 			varValue = c.getVarValue(varName)
 			if varValue == "" {
 				return nil
 			}
-			if isValid(end) {
-				line = line[end:]
-				c.expression = append(c.expression, Expression{Number, varValue})
-				continue
-			} else if len(line) >= 1 {
-				c.expression = append(c.expression, Expression{Number, varValue})
-				line = line[len(line):]
-				break
-			}
+			c.expression = append(c.expression, Expression{Number, varValue})
 		default:
 			fmt.Println("Invalid expression")
 			return nil
 		}
+		if !isValid(end) {
+			break
+		}
+		line = line[end:]
 	}
 	return c.expression
 }
