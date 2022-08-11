@@ -6,16 +6,13 @@ package main
 [Maps](https://hyperskill.org/learn/topic/1824)
 [Operations with maps](https://hyperskill.org/learn/topic/1850)
 [Introduction to Regexp package](https://hyperskill.org/learn/step/19844)
-[Structs](https://hyperskill.org/learn/topic/1891)
 [Methods](https://hyperskill.org/learn/topic/1928)
-[Public and private scopes](https://hyperskill.org/learn/topic/1894)
 [Anonymous functions] -- TODO!
 */
 
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -195,7 +192,7 @@ func (c Calculator) getVarValue(variable string) string {
 }
 
 func (c Calculator) processLine(line string) {
-	var tokens []string
+	// var tokens []string
 	var number, sign, varName, varValue string
 	var end int
 
@@ -203,49 +200,52 @@ func (c Calculator) processLine(line string) {
 		fmt.Println("Invalid expression")
 	}
 
-	line = strings.Replace(line, " ", "", -1)
-	tokens = strings.Split(line, "")
-
-	for i, token := range tokens {
-		if isNumeric(token) {
+	for len(line) > 0 {
+		token := line[0]
+		switch {
+		case string(token) == " ":
+			line = line[1:]
+			continue
+		case isNumeric(string(token)):
 			number, end = parseNumber(line)
 			if isValid(end) {
 				line = line[end:]
 				c.expression = append(c.expression, Expression{Number, number})
+				continue
+			} else if len(line) >= 1 {
+				c.expression = append(c.expression, Expression{Number, number})
+				line = line[len(line):]
+				break
 			}
-		}
-
-		if isSign(token) {
+		case isSign(string(token)):
 			sign, end = parseSign(line)
 			if isValid(end) {
 				line = line[end:]
 				c.expression = append(c.expression, Expression{Sign, sign})
+				continue
+			} else if len(line) >= 1 {
+				c.expression = append(c.expression, Expression{Number, number})
+				line = line[len(line):]
+				break
 			}
-		}
-
-		if isAlpha(token) {
-			varName, end = parseVariable(line)
-			if isValid(end) {
-				line = line[end:]
-				varValue = c.getVarValue(varName)
-				if varValue != "" {
-					c.expression = append(c.expression, Expression{Number, varValue})
-				}
-			}
-		}
-
-		// Append the last number, or last variable to the expression
-		if i == len(tokens)-1 && isNumeric(token) {
-			number, end = parseNumber(line)
-			c.expression = append(c.expression, Expression{Number, number})
-		}
-
-		if i == len(tokens)-1 && isAlpha(token) {
+		case isAlpha(string(token)):
 			varName, end = parseVariable(line)
 			varValue = c.getVarValue(varName)
-			if varValue != "" {
-				c.expression = append(c.expression, Expression{Number, varValue})
+			if varValue == "" {
+				return
 			}
+			if isValid(end) {
+				line = line[end:]
+				c.expression = append(c.expression, Expression{Number, varValue})
+				continue
+			} else if len(line) >= 1 {
+				c.expression = append(c.expression, Expression{Number, varValue})
+				line = line[len(line):]
+				break
+			}
+		default:
+			fmt.Println("Invalid expression")
+			return
 		}
 	}
 
@@ -257,19 +257,18 @@ func (c Calculator) processLine(line string) {
 func (c Calculator) getTotal(expression []Expression) int {
 	total, sign := 0, 1
 	for _, token := range expression {
-		if strings.Contains(token.Value, "-") {
-			if strings.Count(token.Value, "-")%2 == 1 {
-				sign *= -1
-			}
-		}
-
-		if isNumeric(token.Value) {
+		switch token.ExpressionType {
+		case Number:
 			n, err := strconv.Atoi(token.Value)
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println(err)
 			}
 			total += n * sign
 			sign = 1
+		case Sign:
+			if strings.Count(token.Value, "-")%2 == 1 {
+				sign *= -1
+			}
 		}
 	}
 	return total

@@ -101,23 +101,6 @@ func isValid(end int) bool {
 	return end != 0
 }
 
-// splitParenthesis separates tokens like "(3" or "1)" and returns a slice with the separated tokens
-func splitParenthesis(tokens []string) []string {
-	var newLine []string
-	for _, token := range tokens {
-		if strings.HasPrefix(token, "(") {
-			newLine = append(newLine, "(")
-			newLine = append(newLine, token[1:])
-		} else if strings.HasSuffix(token, ")") {
-			newLine = append(newLine, token[:len(token)-1])
-			newLine = append(newLine, ")")
-		} else {
-			newLine = append(newLine, token)
-		}
-	}
-	return newLine
-}
-
 // pop deletes the last element of the stack
 func pop(alist *[]string) string {
 	f := len(*alist)
@@ -282,59 +265,55 @@ func (c Calculator) appendValues(line string) []Expression {
 	var (
 		number, symbol    string
 		varName, varValue string
-		tokens            []string
 		end               int
 	)
 
-	line = strings.Replace(line, " ", "", -1)
-	tokens = strings.Split(line, "")
-	tokens = splitParenthesis(tokens)
-
-	// remove any "" in between the tokens
-	tokens = strings.Split(strings.Join(tokens, ""), "")
-
-	for i, token := range tokens {
-		if isNumeric(token) {
+	for len(line) > 0 {
+		token := line[0]
+		switch {
+		case string(token) == " ":
+			line = line[1:]
+			continue
+		case isNumeric(string(token)):
 			number, end = parseNumber(line)
 			if isValid(end) {
 				line = line[end:]
 				c.expression = append(c.expression, Expression{Number, number})
 				continue
-			}
-			if i == len(tokens)-1 {
+			} else if len(line) >= 1 {
 				c.expression = append(c.expression, Expression{Number, number})
+				line = line[len(line):]
 				break
 			}
-		}
-
-		if isSymbol(token) {
+		case isSymbol(string(token)):
 			symbol, end = parseSymbol(line)
 			if isValid(end) {
 				line = line[end:]
 				c.expression = append(c.expression, Expression{Symbol, symbol})
 				continue
-			}
-			if i == len(tokens)-1 {
+			} else if len(line) >= 1 {
 				c.expression = append(c.expression, Expression{Symbol, symbol})
+				line = line[len(line):]
 				break
 			}
-		}
-
-		if isAlpha(token) {
+		case isAlpha(string(token)):
 			varName, end = parseVariable(line)
+			varValue = c.getVarValue(varName)
+			if varValue == "" {
+				return nil
+			}
 			if isValid(end) {
 				line = line[end:]
-				varValue = c.getVarValue(varName)
-				if varValue != "" {
-					c.expression = append(c.expression, Expression{Number, varValue})
-					continue
-				}
-			}
-			if i == len(tokens)-1 {
-				varValue = c.getVarValue(varName)
 				c.expression = append(c.expression, Expression{Number, varValue})
+				continue
+			} else if len(line) >= 1 {
+				c.expression = append(c.expression, Expression{Number, varValue})
+				line = line[len(line):]
 				break
 			}
+		default:
+			fmt.Println("Invalid expression")
+			return nil
 		}
 	}
 	return c.expression
@@ -442,6 +421,7 @@ func (c Calculator) checkSingleNum() int {
 	var singleNum []string
 	sign := 1
 
+	// Iterate over the expression and confirm that it is a single number with signs in front or not:
 	for i, token := range c.expression {
 		if isNumeric(token.Value) && i < len(c.expression)-1 {
 			if isSymbol(c.expression[i+1].Value) {
@@ -452,6 +432,7 @@ func (c Calculator) checkSingleNum() int {
 		}
 	}
 
+	// Calculate the correct "sign" either positive or negative for the single number
 	for _, token := range singleNum {
 		if token == "-" {
 			sign *= -1
@@ -571,10 +552,14 @@ func (c Calculator) processLine(line string) {
 		fmt.Println("Invalid expression")
 		return
 	}
+
+	// If the expression is valid, proceed to append each operator and number to it:
 	c.expression = c.appendValues(line)
 
+	// If the expression is not blank, then get its postfix form:
 	if len(c.expression) > 0 {
 		c.postfixExpr = c.getPostfix(c.expression)
+		// If the postfix form is not blank, then proceed to calculate the result:
 		if c.postfixExpr != nil {
 			fmt.Println(c.getTotal())
 		}

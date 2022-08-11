@@ -4,13 +4,14 @@ package main
 [Smart Calculator - Stage 5/7: Error!](https://hyperskill.org/projects/74/stages/413/implement)
 -------------------------------------------------------------------------------
 [String search](https://hyperskill.org/learn/topic/2063)
+[Structs](https://hyperskill.org/learn/topic/1891)
+[Public and private scopes](https://hyperskill.org/learn/topic/1894)
 [Type casting and type switching] -- TODO!
 */
 
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -38,20 +39,6 @@ func isNumeric(s string) bool {
 
 	for _, c := range s {
 		if !unicode.IsDigit(c) {
-			return false
-		}
-	}
-	return true
-}
-
-// isAlpha checks if all the characters in the string are alphabet letters
-func isAlpha(s string) bool {
-	if s == "" {
-		return false
-	}
-
-	for _, c := range s {
-		if !unicode.IsLetter(c) {
 			return false
 		}
 	}
@@ -121,7 +108,6 @@ func parseSign(line string) (string, int) {
 
 // processLine does the actual work of the program:
 func processLine(line string) {
-	var tokens []string
 	var sign string
 	var number string
 	var end int
@@ -132,39 +118,38 @@ func processLine(line string) {
 		return
 	}
 
-	// Since the input is not a command, we can assume it is an expression
-	// We need to remove all blank spaces from the input 'line' with the strings.Replace() function
-	// So expressions like "10 + 10 + 8" or "10 +10 +8" are converted to "10+10+8"
-	// The algorithm can only properly parse expressions that do not have any blank spaces in between
-	line = strings.Replace(line, " ", "", -1)
-	tokens = strings.Split(line, "")
-
-	for i, token := range tokens {
-		if isNumeric(token) {
+	for len(line) > 0 {
+		token := line[0]
+		switch {
+		case string(token) == " ":
+			line = line[1:]
+			continue
+		case isNumeric(string(token)):
 			number, end = parseNumber(line)
 			if isValid(end) {
 				line = line[end:]
 				expression = append(expression, Expression{Number, number})
+				continue
+			} else if len(line) >= 1 {
+				expression = append(expression, Expression{Number, number})
+				line = line[len(line):]
+				break
 			}
-		}
-
-		if isSign(token) {
+		case isSign(string(token)):
 			sign, end = parseSign(line)
 			if isValid(end) {
 				line = line[end:]
 				expression = append(expression, Expression{Sign, sign})
+				continue
+			} else if len(line) >= 1 {
+				expression = append(expression, Expression{Number, number})
+				line = line[len(line):]
+				break
 			}
-		}
-
-		if isAlpha(token) {
+			break
+		default:
 			fmt.Println("Invalid expression")
 			return
-		}
-
-		// Append the last number to the expression
-		if i == len(tokens)-1 && isNumeric(token) {
-			number, end = parseNumber(line)
-			expression = append(expression, Expression{Number, number})
 		}
 	}
 
@@ -176,17 +161,18 @@ func processLine(line string) {
 func getTotal(expression []Expression) int {
 	total, sign := 0, 1
 	for _, token := range expression {
-		if strings.Contains(token.Value, "-") {
-			if strings.Count(token.Value, "-")%2 == 1 {
-				sign *= -1
-			}
-		} else if isNumeric(token.Value) {
+		switch token.ExpressionType {
+		case Number:
 			n, err := strconv.Atoi(token.Value)
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println(err)
 			}
 			total += n * sign
 			sign = 1
+		case Sign:
+			if strings.Count(token.Value, "-")%2 == 1 {
+				sign *= -1
+			}
 		}
 	}
 	return total
