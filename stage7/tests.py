@@ -19,35 +19,35 @@ class CalcTest(StageTest):
 
             ###### Hermann's personal test cases ######
 
-            SimpleTestCase(stdin="10", stdout="10", feedback="aaaa"),
-
-            SimpleTestCase(stdin="-10", stdout="-10", feedback="aaa"),
-
-            SimpleTestCase(stdin="--10", stdout="10", feedback="aaa"),
-
-            SimpleTestCase(stdin="---10", stdout="-10", feedback="aaa"),
-
-            SimpleTestCase(stdin="----10", stdout="10", feedback="aaa"),
-
-            SimpleTestCase(stdin="-----10", stdout="-10", feedback="aaa"),
-
-            ########################################################################
-
-            SimpleTestCase(stdin="+-10", stdout="-10", feedback="aaa"),
-
-            SimpleTestCase(stdin="-+10", stdout="-10", feedback="aaa"),
-
-            SimpleTestCase(stdin="+--10", stdout="10", feedback="aaa"),
-
-            SimpleTestCase(stdin="--+10", stdout="10", feedback="aaa"),
-
-            SimpleTestCase(stdin="++--10", stdout="10", feedback="aaa"),
-
-            SimpleTestCase(stdin="--++10", stdout="10", feedback="aaa"),
-
-            SimpleTestCase(stdin="++---10", stdout="-10", feedback="aaa"),
-
-            SimpleTestCase(stdin="---++10", stdout="-10", feedback="aaa"),
+            # SimpleTestCase(stdin="10", stdout="10", feedback="aaaa"),
+            #
+            # SimpleTestCase(stdin="-10", stdout="-10", feedback="aaa"),
+            #
+            # SimpleTestCase(stdin="--10", stdout="10", feedback="aaa"),
+            #
+            # SimpleTestCase(stdin="---10", stdout="-10", feedback="aaa"),
+            #
+            # SimpleTestCase(stdin="----10", stdout="10", feedback="aaa"),
+            #
+            # SimpleTestCase(stdin="-----10", stdout="-10", feedback="aaa"),
+            #
+            # ########################################################################
+            #
+            # SimpleTestCase(stdin="+-10", stdout="-10", feedback="aaa"),
+            #
+            # SimpleTestCase(stdin="-+10", stdout="-10", feedback="aaa"),
+            #
+            # SimpleTestCase(stdin="+--10", stdout="10", feedback="aaa"),
+            #
+            # SimpleTestCase(stdin="--+10", stdout="10", feedback="aaa"),
+            #
+            # SimpleTestCase(stdin="++--10", stdout="10", feedback="aaa"),
+            #
+            # SimpleTestCase(stdin="--++10", stdout="10", feedback="aaa"),
+            #
+            # SimpleTestCase(stdin="++---10", stdout="-10", feedback="aaa"),
+            #
+            # SimpleTestCase(stdin="---++10", stdout="-10", feedback="aaa"),
 
             ########################################################################
 
@@ -59,7 +59,13 @@ class CalcTest(StageTest):
 
             SimpleTestCase(stdin="++10--12--8", stdout="30", feedback="aaa"),
 
+            SimpleTestCase(stdin="---10--12--8", stdout="10", feedback="aaa"),
+
             SimpleTestCase(stdin="--10--12--8", stdout="30", feedback="aaa"),
+
+            SimpleTestCase(stdin="----10--12--8", stdout="30", feedback="aaa"),
+
+            SimpleTestCase(stdin="-----10--12--8", stdout="10", feedback="aaa"),
 
             SimpleTestCase(stdin="-10+12-8", stdout="-6", feedback="aaa"),
 
@@ -125,11 +131,11 @@ class CalcTest(StageTest):
 
             ###### TEST CASES FOR THE ^ OPERATOR ######
 
-            SimpleTestCase(stdin="2^2", stdout="4", feedback="aaa"),
+            SimpleTestCase(stdin="3^3", stdout="27", feedback="aaa"),
 
-            SimpleTestCase(stdin="-2^2", stdout="4", feedback="aaa"),
+            SimpleTestCase(stdin="-3^3", stdout="-27", feedback="aaa"),
 
-            SimpleTestCase(stdin="2^-2", stdout="0", feedback="aaa"),
+            SimpleTestCase(stdin="3^-3", stdout="0", feedback="aaa"),
 
             SimpleTestCase(stdin="-2^3", stdout="-8", feedback="aaa"),
 

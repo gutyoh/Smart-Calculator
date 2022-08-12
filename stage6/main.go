@@ -13,6 +13,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -29,7 +30,7 @@ const (
 
 type Expression struct {
 	ExpressionType
-	Value string
+	Value any
 }
 
 // Calculator is a type that will handle a map 'memory' to store variables such as "a = 5"
@@ -75,10 +76,6 @@ func isAlpha(s string) bool {
 
 func isSign(token string) bool {
 	return token == "+" || token == "-"
-}
-
-func isValid(end int) bool {
-	return end != 0
 }
 
 // checkAssignment checks if the line is an assignment operation "a = 5"
@@ -127,7 +124,6 @@ func processCommand(line string) {
 func validateExpression(line string) bool {
 	// Check for the most basic case of invalid expressions, trailing operators like: 10+10-8-
 	if strings.HasSuffix(line, "+") || strings.HasSuffix(line, "-") {
-		fmt.Println("Invalid expression")
 		return false
 	}
 
@@ -144,15 +140,24 @@ func validateExpression(line string) bool {
 	return false
 }
 
-func parseNumber(line string) (string, int) {
-	var number string
-	var end int
-	for i, token := range line {
+func parseNumber(line string) (int, int) {
+	var (
+		stringNum   string
+		end, number int
+	)
+
+	for _, token := range line {
 		if !isNumeric(string(token)) {
-			end = i
 			break
 		}
-		number += string(token)
+		stringNum += string(token)
+	}
+	end = len(stringNum)
+
+	// Convert the string number to an integer number
+	number, err := strconv.Atoi(stringNum)
+	if err != nil {
+		log.Fatal(err)
 	}
 	return number, end
 }
@@ -160,77 +165,75 @@ func parseNumber(line string) (string, int) {
 func parseSign(line string) (string, int) {
 	var sign string
 	var end int
-	for i, token := range line {
+
+	for _, token := range line {
 		if !isSign(string(token)) {
-			end = i
 			break
 		}
 		sign += string(token)
 	}
+	end = len(sign)
 	return sign, end
 }
 
 func parseVariable(line string) (string, int) {
 	var variable string
 	var end int
-	for i, token := range line {
+
+	for _, token := range line {
 		if !isAlpha(string(token)) {
-			end = i
 			break
 		}
 		variable += string(token)
 	}
+	end = len(variable)
 	return variable, end
 }
 
-func (c Calculator) getVarValue(variable string) string {
+func (c Calculator) getVarValue(variable string) any {
 	if !mapContains(c.memory, variable) {
 		fmt.Println("Unknown variable")
-		return ""
+		return nil
 	}
-	return strconv.Itoa(c.memory[variable])
+	return c.memory[variable]
 }
 
 func (c Calculator) processLine(line string) {
-	// var tokens []string
-	var number, sign, varName, varValue string
-	var end int
+	var (
+		sign, varName string
+		number, end   int
+		varValue      any
+	)
 
 	if !validateExpression(line) {
 		fmt.Println("Invalid expression")
+		return
 	}
 
 	for len(line) > 0 {
-		token := line[0]
+		token := string(line[0])
 		switch {
-		case string(token) == " ":
+		case token == " ":
 			end = 1
-		case isNumeric(string(token)):
+		case isNumeric(token):
 			number, end = parseNumber(line)
 			c.expression = append(c.expression, Expression{Number, number})
-		case isSign(string(token)):
+		case isSign(token):
 			sign, end = parseSign(line)
 			c.expression = append(c.expression, Expression{Sign, sign})
-		case isAlpha(string(token)):
+		case isAlpha(token):
 			varName, end = parseVariable(line)
 			varValue = c.getVarValue(varName)
-			if varValue == "" {
+			if varValue == nil {
 				return
 			}
-			c.expression = append(c.expression, Expression{Number, varValue})
+			c.expression = append(c.expression, Expression{Number, varValue.(int)})
 		default:
-			fmt.Println("Invalid expression")
 			return
-		}
-		if !isValid(end) {
-			break
 		}
 		line = line[end:]
 	}
-
-	if len(c.expression) > 0 {
-		fmt.Println(c.getTotal(c.expression))
-	}
+	fmt.Println(c.getTotal(c.expression))
 }
 
 func (c Calculator) getTotal(expression []Expression) int {
@@ -238,14 +241,10 @@ func (c Calculator) getTotal(expression []Expression) int {
 	for _, token := range expression {
 		switch token.ExpressionType {
 		case Number:
-			n, err := strconv.Atoi(token.Value)
-			if err != nil {
-				fmt.Println(err)
-			}
-			total += n * sign
+			total += token.Value.(int) * sign
 			sign = 1
 		case Sign:
-			if strings.Count(token.Value, "-")%2 == 1 {
+			if strings.Count(token.Value.(string), "-")%2 == 1 {
 				sign *= -1
 			}
 		}

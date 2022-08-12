@@ -12,6 +12,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -28,8 +29,10 @@ const (
 
 type Expression struct {
 	ExpressionType
-	Value string
+	Value any
 }
+
+var validSymbols = " +-"
 
 // isNumeric checks if all the characters in the string are digits
 func isNumeric(s string) bool {
@@ -49,10 +52,6 @@ func isSign(token string) bool {
 	return token == "+" || token == "-"
 }
 
-func isValid(end int) bool {
-	return end != 0
-}
-
 func processCommand(line string) {
 	if line != "/exit" && line != "/help" {
 		fmt.Println("Unknown command")
@@ -63,8 +62,14 @@ func processCommand(line string) {
 func validateExpression(line string) bool {
 	// Check for the most basic case of invalid expressions, trailing operators like: 10+10-8-
 	if strings.HasSuffix(line, "+") || strings.HasSuffix(line, "-") {
-		fmt.Println("Invalid expression")
 		return false
+	}
+
+	// Check if the line has any characters like letters or symbols other than digits and '+' and '-' and spaces ' '
+	for _, c := range line {
+		if !unicode.IsDigit(c) && !strings.Contains(validSymbols, string(c)) {
+			return false
+		}
 	}
 
 	// If the expression doesn't have any trailing operators, then check if it has signs in between
@@ -80,37 +85,48 @@ func validateExpression(line string) bool {
 	return false
 }
 
-func parseNumber(line string) (string, int) {
-	var number string
-	var end int
-	for i, token := range line {
+func parseNumber(line string) (int, int) {
+	var (
+		stringNum   string
+		end, number int
+	)
+
+	for _, token := range line {
 		if !isNumeric(string(token)) {
-			end = i
 			break
 		}
-		number += string(token)
+		stringNum += string(token)
+	}
+	end = len(stringNum)
+
+	// Convert the string number to an integer number
+	number, err := strconv.Atoi(stringNum)
+	if err != nil {
+		log.Fatal(err)
 	}
 	return number, end
 }
 
 func parseSign(line string) (string, int) {
-	var sign string
-	var end int
-	for i, token := range line {
+	var (
+		sign string
+		end  int
+	)
+
+	for _, token := range line {
 		if !isSign(string(token)) {
-			end = i
 			break
 		}
 		sign += string(token)
 	}
+	end = len(sign)
 	return sign, end
 }
 
 // processLine does the actual work of the program:
 func processLine(line string) {
 	var sign string
-	var number string
-	var end int
+	var number, end int
 	var expression []Expression
 
 	if !validateExpression(line) {
@@ -119,29 +135,24 @@ func processLine(line string) {
 	}
 
 	for len(line) > 0 {
-		token := line[0]
+		token := string(line[0])
 		switch {
-		case string(token) == " ":
+		case token == " ":
 			end = 1
-		case isNumeric(string(token)):
+		case isNumeric(token):
 			number, end = parseNumber(line)
 			expression = append(expression, Expression{Number, number})
-		case isSign(string(token)):
+		case isSign(token):
 			sign, end = parseSign(line)
 			expression = append(expression, Expression{Sign, sign})
 		default:
-			fmt.Println("Invalid expression")
 			return
-		}
-		if !isValid(end) {
-			break
 		}
 		line = line[end:]
 	}
 
-	if len(expression) > 0 {
-		fmt.Println(getTotal(expression))
-	}
+	// Calculate the expression and output the final result
+	fmt.Println(getTotal(expression))
 }
 
 func getTotal(expression []Expression) int {
@@ -149,14 +160,10 @@ func getTotal(expression []Expression) int {
 	for _, token := range expression {
 		switch token.ExpressionType {
 		case Number:
-			n, err := strconv.Atoi(token.Value)
-			if err != nil {
-				fmt.Println(err)
-			}
-			total += n * sign
+			total += token.Value.(int) * sign
 			sign = 1
 		case Sign:
-			if strings.Count(token.Value, "-")%2 == 1 {
+			if strings.Count(token.Value.(string), "-")%2 == 1 {
 				sign *= -1
 			}
 		}
