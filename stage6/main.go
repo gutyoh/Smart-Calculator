@@ -99,9 +99,11 @@ func checkAssignment(s string) bool {
 	return false
 }
 
+// TODO -- Check if this is required or if it can be replaced by processLine()
 func getAssignmentElements(line string) []Expression {
 	var elems []Expression
-	var end, number int
+	var end int
+	var number any
 	var variable string
 
 	for len(line) > 0 {
@@ -119,10 +121,6 @@ func getAssignmentElements(line string) []Expression {
 			}
 			if isAlpha(token) {
 				variable, end = parseVariable(line)
-				if variable == "" {
-					fmt.Println("Invalid identifier")
-					return nil
-				}
 				elems = append(elems, Expression{Variable, variable})
 			}
 		}
@@ -141,17 +139,12 @@ func (c Calculator) assign(line string) {
 	variable := elems[0].Value
 	value := elems[2].Value
 
-	// if the type of variable is not a string then it is an error
-	if reflect.TypeOf(variable).Kind() != reflect.String {
-		fmt.Println("Invalid identifier")
-		return
-	} else {
-		if !mapContains(c.memory, variable.(string)) {
-			fmt.Println("Invalid assignment")
+	if reflect.TypeOf(value).Kind() == reflect.String {
+		value = c.getVarValue(value.(string))
+		if value == nil {
 			return
 		}
 	}
-
 	c.memory[variable.(string)] = value.(int)
 	return
 }
@@ -184,65 +177,72 @@ func getOperationType(line string) OperationType {
 // TODO -- Make this a for loop that validates the entire syntax of the expression
 // In case it is valid, then we can further process the line
 func validateExpression(line string) bool {
-	var number, end int
-	var varName, sign string
-	var valid bool
+	var valid = true
+	var varName string
+	var end int
+	var number any
 
 	// First check if the expression is a single number or a single variable
 	if isNumeric(line) || isAlpha(line) {
 		valid = true
 	}
 
-	// Check for the most basic case of invalid expressions, trailing operators like: 10+10-8-
+	// Then check for the most basic case of invalid expressions, trailing operators like: 10+10-8-
 	if strings.HasSuffix(line, "+") || strings.HasSuffix(line, "-") {
+		fmt.Println("Invalid expression")
 		valid = false
 	}
 
-	// Check if the line has more than one "=" sign in it
+	// Then check if the line has more than one "=" sign in it
 	if strings.Count(line, "=") > 1 {
+		fmt.Println("Invalid assignment")
 		valid = false
 	}
 
-	// Check if the expression has at least one valid symbol to further be processed
+	// Then check if the expression has at least one valid symbol to further be processed
 	if checkSymbols(line) {
-		valid = true
-	}
-
-	// Finally check if the expression has any invalid identifiers like a2a or a1 = 8
-	// Or 5 + 5 + a1
-
-	for len(line) > 0 {
-		token := string(line[0])
-		switch {
-		case token == " ":
-			end = 1
-		case isNumeric(token):
-			number, end = parseNumber(line)
-			fmt.Sprintln(number)
-		case isSign(token):
-			sign, end = parseSign(line)
-			fmt.Sprintln(sign)
-		case isAlpha(token):
-			varName, end = parseVariable(line)
-			if varName == "" {
-				fmt.Println("Invalid identifier")
-				valid = false
+		// Finally check if the expression has any invalid identifiers like a2a or a1 = 8
+		// Or 5 + 5 + a1 or 5 = 5
+	Loop:
+		for len(line) > 0 {
+			token := string(line[0])
+			switch {
+			case token == " ":
+				end = 1
+			case token == "=":
+				end = 1
+			case isNumeric(token):
+				number, end = parseNumber(line)
+				if number == nil {
+					fmt.Println("Invalid assignment")
+					valid = false
+					break Loop
+				}
+			case isAlpha(token):
+				varName, end = parseVariable(line)
+				if varName == "" {
+					fmt.Println("Invalid assignment")
+					valid = false
+					break Loop
+				}
 			}
-		default:
-			return false
+			line = line[end:]
 		}
-		line = line[end:]
 	}
 	return valid
 }
 
-func parseNumber(line string) (int, int) {
+func parseNumber(line string) (any, int) {
 	var (
 		stringNum   string
 		end, number int
 	)
 
 	for _, token := range line {
+		if isAlpha(string(token)) {
+			return nil, 0
+		}
+
 		if !isNumeric(string(token)) {
 			break
 		}
@@ -302,9 +302,9 @@ func (c Calculator) getVarValue(variable string) any {
 
 func (c Calculator) processLine(line string) {
 	var (
-		sign, varName string
-		number, end   int
-		varValue      any
+		sign, varName    string
+		end              int
+		number, varValue any
 	)
 
 	for len(line) > 0 {
@@ -314,16 +314,12 @@ func (c Calculator) processLine(line string) {
 			end = 1
 		case isNumeric(token):
 			number, end = parseNumber(line)
-			c.expression = append(c.expression, Expression{Number, number})
+			c.expression = append(c.expression, Expression{Number, number.(int)})
 		case isSign(token):
 			sign, end = parseSign(line)
 			c.expression = append(c.expression, Expression{Symbol, sign})
 		case isAlpha(token):
 			varName, end = parseVariable(line)
-			if varName == "" {
-				fmt.Println("Invalid identifier")
-				return
-			}
 			varValue = c.getVarValue(varName)
 			if varValue == nil {
 				return
@@ -334,6 +330,7 @@ func (c Calculator) processLine(line string) {
 		}
 		line = line[end:]
 	}
+	fmt.Println(c.getTotal(c.expression))
 }
 
 func (c Calculator) getTotal(expression []Expression) int {
@@ -381,7 +378,6 @@ func main() {
 
 			// Check if the line is a valid expression
 			if !validateExpression(line) {
-				fmt.Println("Invalid expression")
 				continue
 			}
 

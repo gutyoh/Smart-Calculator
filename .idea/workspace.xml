@@ -7,10 +7,7 @@
     <list default="true" id="96a21561-463b-4603-9205-7ed0522a85a7" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/Smart-Calculator.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Smart-Calculator.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stage5/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/stage5/main.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/stage6/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/stage6/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stage7/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/stage7/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stage7/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/stage7/tests.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,7 +22,7 @@
       </list>
     </option>
   </component>
-  <component name="GOROOT" url="file://$USER_HOME$/sdk/go1.18.4" />
+  <component name="GOROOT" url="file:///opt/homebrew/Cellar/go/1.18.4/libexec" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -43,23 +40,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "DefaultGoTemplateProperty": "Go File",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.go.format.on.save.advertiser.fired": "true",
-    "RunOnceActivity.go.formatter.settings.were.checked": "true",
-    "RunOnceActivity.go.migrated.go.modules.settings": "true",
-    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "RunOnceActivity.go.watchers.conflict.with.on.save.actions.check.performed": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "go.import.settings.migrated": "true",
-    "go.sdk.automatically.set": "true",
-    "last_opened_file_path": "C:/Users/mrgut",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultGoTemplateProperty&quot;: &quot;Go File&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.format.on.save.advertiser.fired&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.watchers.conflict.with.on.save.actions.check.performed&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
+    &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/guty&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\mrgut\Documents\Smart-Calculator\stage7\temp" />
@@ -69,21 +66,21 @@
       <recent name="C:\Users\mrgut\Documents\Smart-Calculator\stage7\temp" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.tests">
-    <configuration name="go build main2.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
-      <module name="Smart-Calculator" />
-      <working_directory value="$PROJECT_DIR$" />
-      <kind value="FILE" />
-      <directory value="$PROJECT_DIR$" />
-      <filePath value="$PROJECT_DIR$/stage7/temp/main2.go" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Python.tests (2)">
     <configuration name="go build main.go (1)" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="Smart-Calculator" />
       <working_directory value="$PROJECT_DIR$" />
       <kind value="FILE" />
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$/stage7/main.go" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build main.go (2)" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="Smart-Calculator" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/stage6/main.go" />
       <method v="2" />
     </configuration>
     <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
@@ -101,9 +98,9 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="" />
+      <option name="SDK_HOME" value="$PROJECT_DIR$/venv/bin/python" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/stage6" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
@@ -140,11 +137,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.tests (2)" />
+        <item itemvalue="Go Build.go build main.go (2)" />
         <item itemvalue="Python.tests" />
         <item itemvalue="Go Build.go build main.go (1)" />
-        <item itemvalue="Python.tests (2)" />
         <item itemvalue="Go Build.go build main.go" />
-        <item itemvalue="Go Build.go build main2.go" />
       </list>
     </recent_temporary>
   </component>
@@ -184,24 +181,19 @@
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/stage7/tests.py</url>
-          <line>344</line>
-          <option name="timeStamp" value="24" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/stage5/main.go</url>
-          <line>192</line>
+          <line>171</line>
           <option name="timeStamp" value="27" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/stage6/main.go</url>
-          <line>190</line>
+          <line>296</line>
           <option name="timeStamp" value="33" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/stage6/main.go</url>
-          <line>219</line>
+          <line>319</line>
           <option name="timeStamp" value="34" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
@@ -216,23 +208,48 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/stage7/main.go</url>
-          <line>479</line>
+          <line>435</line>
           <option name="timeStamp" value="61" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/stage7/main.go</url>
-          <line>504</line>
+          <line>469</line>
           <option name="timeStamp" value="68" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/stage7/main.go</url>
-          <line>508</line>
+          <line>473</line>
           <option name="timeStamp" value="69" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/stage7/main.go</url>
-          <line>449</line>
+          <line>407</line>
           <option name="timeStamp" value="70" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/stage6/main.go</url>
+          <line>389</line>
+          <option name="timeStamp" value="75" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/stage6/main.go</url>
+          <line>133</line>
+          <option name="timeStamp" value="77" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/stage6/main.go</url>
+          <line>202</line>
+          <option name="timeStamp" value="80" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/stage6/main.go</url>
+          <line>206</line>
+          <option name="timeStamp" value="81" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/stage6/main.go</url>
+          <line>221</line>
+          <option name="timeStamp" value="82" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -250,11 +267,15 @@
         <watch expression="string(token)" language="go" />
         <watch expression="c.stack" language="go" />
         <watch expression="(token.Value)" language="go" />
+        <watch expression="c" language="go" />
       </configuration>
       <configuration name="PythonConfigurationType">
         <watch expression="list(user_input)" language="Python" />
       </configuration>
-      <inline-watch fileUrl="file://$PROJECT_DIR$/stage5/main.go" line="118">
+      <inline-watch fileUrl="file://$PROJECT_DIR$/stage6/main.go" line="241">
+        <watch expression="string(token)" />
+      </inline-watch>
+      <inline-watch fileUrl="file://$PROJECT_DIR$/stage5/main.go" line="122">
         <watch expression="string(token)" />
       </inline-watch>
     </watches-manager>
