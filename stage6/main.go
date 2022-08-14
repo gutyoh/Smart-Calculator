@@ -407,8 +407,8 @@ func main() {
 				continue
 			}
 
-			// After parsing the expression, we can execute the operation,
-			// whether it's an assignment or regular math operation
+			// If the expression is valid, then we can get the operation Type to further process the expression
+			// It will be either an "Assignment" operation or a "Regular" math operation.
 			c.OperationType = getOperationType(line)
 
 			switch c.OperationType {
