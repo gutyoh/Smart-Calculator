@@ -8,6 +8,7 @@ package main
 [Introduction to Regexp package](https://hyperskill.org/learn/step/19844)
 [Methods](https://hyperskill.org/learn/topic/1928)
 [Anonymous functions] -- TODO!
+[Goto and labels](https://hyperskill.org/learn/step/20238)
 */
 
 import (
@@ -99,7 +100,7 @@ func checkAssignment(s string) bool {
 	return false
 }
 
-// TODO -- Check if this is required or if it can be replaced by processLine()
+// getAssignmentElements returns the elements of an assignment operation "a = 5"
 func getAssignmentElements(line string) []Expression {
 	var elems []Expression
 	var end int
@@ -174,69 +175,94 @@ func getOperationType(line string) OperationType {
 	return Regular
 }
 
-// TODO -- Make this a for loop that validates the entire syntax of the expression
-// In case it is valid, then we can further process the line
 func validateExpression(line string) bool {
-	var valid = true
+	var number, end int
 	var varName string
-	var end int
-	var number any
+	var valid = true
 
 	// First check if the expression is a single number or a single variable
 	if isNumeric(line) || isAlpha(line) {
-		valid = true
+		return true
 	}
 
 	// Then check for the most basic case of invalid expressions, trailing operators like: 10+10-8-
 	if strings.HasSuffix(line, "+") || strings.HasSuffix(line, "-") {
 		fmt.Println("Invalid expression")
-		valid = false
+		return false
 	}
 
 	// Then check if the line has more than one "=" sign in it
 	if strings.Count(line, "=") > 1 {
 		fmt.Println("Invalid assignment")
-		valid = false
+		return false
 	}
 
-	// Then check if the expression has at least one valid symbol to further be processed
-	if checkSymbols(line) {
-		// Finally check if the expression has any invalid identifiers like a2a or a1 = 8
-		// Or 5 + 5 + a1 or 5 = 5
-	Loop:
-		for len(line) > 0 {
-			token := string(line[0])
-			switch {
-			case token == " ":
-				end = 1
-			case token == "=":
-				end = 1
-			case isNumeric(token):
-				number, end = parseNumber(line)
-				if number == nil {
-					fmt.Println("Invalid assignment")
-					valid = false
-					break Loop
-				}
-			case isAlpha(token):
-				varName, end = parseVariable(line)
-				if varName == "" {
+	// Then check if there is at least one valid symbol in the line, to validate cases like 10 10 or 18 22
+	// For cases like a2a or n22 that begin with a letter, then we should print "Invalid identifier" instead
+	// So for cases that start with a letter, like a2a we return true and further check within validateSyntax()
+	if !checkSymbols(line) && !isAlpha(line[0:1]) {
+		fmt.Println("Invalid expression")
+		return false
+	}
+
+	// If none of the above checks are true, then we perform the final check,
+	// We proceed to validate the syntax of the expression:
+	valid = validateSyntax(line, end, number, valid, varName)
+	return valid
+}
+
+// validateSyntax validates the syntax of the expression and checks for special edge cases
+func validateSyntax(line string, end int, number any, valid bool, varName string) bool {
+	var prevSym string
+
+	// validateSyntax checks if the expression has any "Invalid identifiers" like a2a or a1 = 8
+	// And other edge cases like test = 2n or test = n2
+Loop:
+	for len(line) > 0 {
+		token := string(line[0])
+		switch {
+		case token == " ":
+			end = 1
+		case token == "=":
+			end = 1
+			prevSym = "="
+		case isNumeric(token):
+			number, end = parseNumber(line)
+			if number == nil && prevSym == "=" { // Validates cases like test = 2n
+				fmt.Println("Invalid assignment")
+				valid = false
+				break Loop
+			}
+
+			if varName == "" { // Validates cases like 5 = 5, or 100 = 20
+				if number != nil && prevSym == "=" {
 					fmt.Println("Invalid assignment")
 					valid = false
 					break Loop
 				}
 			}
-			line = line[end:]
+		case isAlpha(token):
+			varName, end = parseVariable(line)
+			if varName == "" && prevSym == "=" { // Validates cases like test = a2a
+				fmt.Println("Invalid assignment")
+				valid = false
+				break Loop
+			}
+
+			if varName == "" { // Validates cases like a2a or n22 or a1 = 8
+				fmt.Println("Invalid identifier")
+				valid = false
+				break Loop
+			}
 		}
+		line = line[end:]
 	}
 	return valid
 }
 
 func parseNumber(line string) (any, int) {
-	var (
-		stringNum   string
-		end, number int
-	)
+	var stringNum string
+	var end, number int
 
 	for _, token := range line {
 		if isAlpha(string(token)) {
