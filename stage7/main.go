@@ -26,6 +26,15 @@ const (
 	_ ExpressionType = iota
 	Number
 	Symbol
+	Variable
+)
+
+type OperationType int
+
+const (
+	_ OperationType = iota
+	Assignment
+	Regular
 )
 
 type Expression struct {
@@ -38,6 +47,7 @@ type Calculator struct {
 	stack       []Expression
 	postfixExpr []Expression
 	expression  []Expression
+	OperationType
 }
 
 var operatorRank = map[string]int{
@@ -108,37 +118,59 @@ func pop(alist *[]Expression) Expression {
 
 // checkAssignment checks if the line is an assignment operation "a = 5"
 func checkAssignment(s string) bool {
-	return strings.Contains(s, "=")
+	if strings.Contains(s, "=") && strings.Count(s, "=") == 1 {
+		return true
+	}
+	return false
+}
+
+// getAssignmentElements returns the elements of an assignment operation "a = 5"
+func getAssignmentElements(line string) []Expression {
+	var elems []Expression
+	var end int
+	var number any
+	var variable string
+
+	for len(line) > 0 {
+		token := string(line[0])
+		switch token {
+		case " ":
+			end = 1
+		case "=":
+			end = 1
+			elems = append(elems, Expression{Symbol, token})
+		default:
+			if isNumeric(token) {
+				number, end = parseNumber(line)
+				elems = append(elems, Expression{Number, number})
+			}
+			if isAlpha(token) {
+				variable, end = parseVariable(line)
+				elems = append(elems, Expression{Variable, variable})
+			}
+		}
+		line = line[end:]
+	}
+	return elems
 }
 
 // The assign function assigns a value to a variable and stores it in the calculator memory
 func (c Calculator) assign(line string) {
-	variable, value := func(s []string) (string, string) {
-		return s[0], s[1]
-	}(func() (elems []string) { // Usage of Anonymous function
-		for _, x := range strings.Split(line, "=") {
-			elems = append(elems, strings.TrimSpace(x))
-		}
-		return elems
-	}())
-
-	if !isAlpha(variable) {
-		fmt.Println("Invalid identifier")
+	elems := getAssignmentElements(line)
+	if elems == nil {
+		return
 	}
 
-	if !isNumeric(value) {
-		if !mapContains(c.memory, value) {
-			fmt.Println("Invalid assignment")
-		} else {
-			value = strconv.Itoa(c.memory[value])
+	variable := elems[0].Value
+	value := elems[2].Value
+
+	if reflect.TypeOf(value).Kind() == reflect.String {
+		value = c.getVarValue(value.(string))
+		if value == nil {
+			return
 		}
 	}
-
-	// Do not handle the error here, because the program will throw an error
-	// if we output a log with an additional line due to the failed assignment
-	v, _ := strconv.Atoi(value)
-
-	c.memory[variable] = v
+	c.memory[variable.(string)] = value.(int)
 	return
 }
 
@@ -166,27 +198,121 @@ func checkSymbols(line string) bool {
 	return false
 }
 
+func getOperationType(line string) OperationType {
+	if checkAssignment(line) {
+		return Assignment
+	}
+	return Regular
+}
+
 func validateExpression(line string) bool {
+	var number, end int
+	var varName string
+	var valid = true
+
 	// First check if the expression is a single number or a single variable
 	if isNumeric(line) || isAlpha(line) {
 		return true
 	}
 
-	// Check for the most basic case of invalid expressions, trailing operators like: 10+10-8-
+	// Then check for the most basic case of invalid expressions, trailing operators like: 10+10-8-
 	if strings.HasSuffix(line, "+") || strings.HasSuffix(line, "-") {
+		fmt.Println("Invalid expression")
 		return false
 	}
 
-	// Check for incorrect parenthesis count in each side of the expression
+	// Then check if the line has more than one "=" sign in it
+	if strings.Count(line, "=") > 1 {
+		fmt.Println("Invalid assignment")
+		return false
+	}
+
+	// Then check if there are the same amount of parenthesis on both sides of the line
 	if checkParenthesis(line) {
+		fmt.Println("Invalid expression")
 		return false
 	}
 
-	// Check if the expression has at least one valid symbol to further be processed
-	if checkSymbols(line) {
-		return true
+	// Then check if there is at least one valid symbol in the line, to validate cases like 10 10 or 18 22
+	// For cases like a2a or n22 that begin with a letter, then we should print "Invalid identifier" instead
+	// So for cases that start with a letter, like a2a we return true and further check within validateSyntax()
+	if !checkSymbols(line) && !isAlpha(line[0:1]) {
+		fmt.Println("Invalid expression")
+		return false
 	}
-	return false
+
+	// If none of the above checks are true, then we perform the final check,
+	// We proceed to validate the syntax of the expression:
+	valid = validateSyntax(line, end, number, valid, varName)
+	return valid
+}
+
+// validateSyntax validates the syntax of the expression and checks for special edge cases
+func validateSyntax(line string, end int, number any, valid bool, varName string) bool {
+	var prevSym string
+
+	// validateSyntax checks if the expression has any "Invalid identifiers" like a2a or a1 = 8
+	// And other edge cases like test = 2n or test = n2
+Loop:
+	for len(line) > 0 {
+		token := string(line[0])
+		switch {
+		case token == " ":
+			end = 1
+		case token == "=":
+			end = 1
+			prevSym = "="
+		case token == "*":
+			if prevSym == "*" {
+				fmt.Println("Invalid expression")
+				valid = false
+				break Loop
+			}
+			end = 1
+			prevSym = token
+		case token == "/":
+			if prevSym == "/" {
+				fmt.Println("Invalid expression")
+				valid = false
+				break Loop
+			}
+			end = 1
+			prevSym = token
+		case isNumeric(token):
+			number, end = parseNumber(line)
+			if number == nil && prevSym == "=" { // Validates cases like test = 2n
+				fmt.Println("Invalid assignment")
+				valid = false
+				break Loop
+			}
+
+			if varName == "" { // Validates cases like 5 = 5, or 100 = 20
+				if number != nil && prevSym == "=" {
+					fmt.Println("Invalid assignment")
+					valid = false
+					break Loop
+				}
+			}
+		case isAlpha(token):
+			varName, end = parseVariable(line)
+			if varName == "" && prevSym == "=" { // Validates cases like test = a2a
+				fmt.Println("Invalid assignment")
+				valid = false
+				break Loop
+			}
+
+			if varName == "" { // Validates cases like a2a or n22 or a1 = 8
+				fmt.Println("Invalid identifier")
+				valid = false
+				break Loop
+			}
+		case isSymbol(token):
+			_, end = parseSymbol(line)
+			prevSym = token
+		}
+		line = line[end:]
+	}
+	return valid
 }
 
 // evalSymbol evaluates the symbol and performs the operation accordingly
@@ -208,17 +334,20 @@ func evalSymbol(a, b int, operator any) int {
 }
 
 // parseNumber parses a number with multiple digits from the input line
-func parseNumber(line string) (int, int) {
-	var (
-		stringNum   string
-		end, number int
-	)
+func parseNumber(line string) (any, int) {
+	var stringNum string
+	var end, number int
 
-	for _, token := range line {
-		if !isNumeric(string(token)) {
+	for _, t := range line {
+		token := string(t)
+		if isAlpha(token) {
+			return nil, 0
+		}
+
+		if !isNumeric(token) {
 			break
 		}
-		stringNum += string(token)
+		stringNum += token
 	}
 	end = len(stringNum)
 
@@ -235,9 +364,10 @@ func parseSymbol(line string) (string, int) {
 	var symbol string
 	var end int
 
-	for i, token := range line {
-		if isSymbol(string(token)) {
-			symbol += string(token)
+	for i, t := range line {
+		token := string(t)
+		if isSymbol(token) {
+			symbol += token
 			end = i + 1
 			break
 		}
@@ -250,11 +380,17 @@ func parseSymbol(line string) (string, int) {
 func parseVariable(line string) (string, int) {
 	var variable string
 	var end int
-	for _, token := range line {
-		if !isAlpha(string(token)) {
+
+	for _, t := range line {
+		token := string(t)
+		if isNumeric(token) {
+			return "", 0
+		}
+
+		if !isAlpha(token) {
 			break
 		}
-		variable += string(token)
+		variable += token
 	}
 	end = len(variable)
 	return variable, end
@@ -271,9 +407,9 @@ func (c Calculator) getVarValue(variable string) any {
 
 func (c Calculator) appendValues(line string) []Expression {
 	var (
-		symbol, varName string
-		number, end     int
-		varValue        any
+		symbol, varName  string
+		end              int
+		number, varValue any
 	)
 
 	for len(line) > 0 {
@@ -358,12 +494,6 @@ func (c Calculator) getPostfix(expression []Expression) []Expression {
 					case "-":
 						pop(&c.stack)
 						c.stack = append(c.stack, Expression{Symbol, "-"})
-					case "*":
-						fmt.Println("Invalid expression")
-						return nil
-					case "/":
-						fmt.Println("Invalid expression")
-						return nil
 					}
 				} else {
 					prevSym = token.Value.(string)
@@ -434,6 +564,7 @@ func (c Calculator) getTotal() int {
 		return singleNum
 	}
 
+	// TODO -- Check the logic of "mc" and "minusCount"
 	// Get the first symbol of the original expression
 	for _, token := range c.expression {
 		if token.ExpressionType == Symbol {
@@ -541,10 +672,10 @@ func (c Calculator) getTotal() int {
 
 // processLine is the main function that processes the input line and returns the result
 func (c Calculator) processLine(line string) {
-	if !validateExpression(line) {
-		fmt.Println("Invalid expression")
-		return
-	}
+	//if !validateExpression(line) {
+	//	fmt.Println("Invalid expression")
+	//	return
+	//}
 
 	// If the expression is valid, proceed to append each operator and number to it:
 	c.expression = c.appendValues(line)
@@ -587,13 +718,22 @@ func main() {
 				continue
 			}
 
-			// Check if the line is an assignment, such as "a=5"
-			if checkAssignment(line) {
-				c.assign(line)
+			// Check if the line is a valid expression
+			if !validateExpression(line) {
 				continue
 			}
 
-			c.processLine(line)
+			// If the expression is valid, then we can get the operation Type to further process the expression
+			// It will be either an "Assignment" operation or a "Regular" math operation.
+			c.OperationType = getOperationType(line)
+
+			switch c.OperationType {
+			case Assignment:
+				c.assign(line)
+				continue
+			case Regular:
+				c.processLine(line)
+			}
 		}
 	}
 }
