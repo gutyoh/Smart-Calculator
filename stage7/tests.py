@@ -57,10 +57,6 @@ class CalcTest(StageTest):
 
             SimpleTestCase(stdin="10--10", stdout="20", feedback="aaa"),
 
-            SimpleTestCase(stdin="-10-12+8", stdout="-14", feedback="aaa"),
-
-            SimpleTestCase(stdin="-10-12--8", stdout="-14", feedback="aaa"),
-
             SimpleTestCase(stdin="++10++12--8", stdout="30", feedback="aaa"),
 
             SimpleTestCase(stdin="++10--12--8", stdout="30", feedback="aaa"),

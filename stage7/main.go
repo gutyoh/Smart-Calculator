@@ -604,21 +604,29 @@ func (c Calculator) getTotal() int {
 		if len(c.stack) > 1 {
 			// Fix this to check for cases like 10-10
 			if a == 0 && b == 0 && token.Value.(string) == "-" {
-				if minusCount%2 == 1 && minusCount != 1 {
-					token.Value = "+"
-				}
+				//if minusCount%2 == 0 && tempMinusCount == 0 {
+				//	token.Value = "+"
+				//}
 
-				if tempMinusCount == 1 && token.Value.(string) == "-" {
+				//if minusCount%2 == 1 && minusCount != 1 {
+				//	token.Value = "+"
+				//}
+
+				if tempMinusCount == 1 && token.Value.(string) == "-" { // -10-10
 					token.Value = "-"
-					tempMinusCount = 0
+					tempMinusCount, minusCount = 0, 0
 				}
 
-				if minusCount == 2 || tempMinusCount != 0 && token.Value.(string) == "-" {
-					token.Value = "+"
-				}
+				//if minusCount == 2 || tempMinusCount != 0 && token.Value.(string) == "-" {
+				//	token.Value = "+"
+				//}
 			}
 
-			if tempMinusCount%2 == 1 && token.Value.(string) == "-" {
+			if minusCount%2 == 0 && minusCount != 0 { // 10 -- 10
+				token.Value = "+"
+			}
+
+			if tempMinusCount%2 == 1 && token.Value.(string) == "-" { // ---10--12--8
 				token.Value = "+"
 			}
 
@@ -627,8 +635,8 @@ func (c Calculator) getTotal() int {
 
 			// Perform the math operation according to the 'token' and push the result to the stack
 			c.stack = append(c.stack, Expression{Number, evalSymbol(a, b, token.Value)})
-			// Reset the minusCount to 0 to properly check for multiple negative signs for the next iteration
-			minusCount = 0
+			// Reset the minus counters to 0 to properly check for multiple negative signs for the next iteration
+			minusCount, tempMinusCount = 0, 0
 		}
 	}
 	// Finally return the calculated result:
