@@ -17,7 +17,7 @@ class CalcTest(StageTest):
                             self.test_2_2, self.test_2_3, self.test_2_4]),
             TestCase(stdin=['8 * (2 + 3', self.test_3_1, self.test_3_2, self.test_3_3, self.test_3_4]),
 
-            ###### Hermann's personal test cases ######
+            ##### Hermann's personal test cases ######
 
             # SimpleTestCase(stdin="10", stdout="10", feedback="aaaa"),
             #
@@ -53,7 +53,13 @@ class CalcTest(StageTest):
 
             SimpleTestCase(stdin="10-10", stdout="0", feedback="aaa"),
 
+            SimpleTestCase(stdin="-10-10", stdout="-20", feedback="aaa"),
+
             SimpleTestCase(stdin="10--10", stdout="20", feedback="aaa"),
+
+            SimpleTestCase(stdin="-10-12+8", stdout="-14", feedback="aaa"),
+
+            SimpleTestCase(stdin="-10-12--8", stdout="-14", feedback="aaa"),
 
             SimpleTestCase(stdin="++10++12--8", stdout="30", feedback="aaa"),
 

@@ -16,7 +16,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"reflect"
 	"strconv"
 	"strings"
 	"unicode"
@@ -133,6 +132,7 @@ func getAssignmentElements(line string) []Expression {
 // The assign function assigns a value to a variable and stores it in the calculator memory
 func (c Calculator) assign(line string) {
 	elems := getAssignmentElements(line)
+
 	if elems == nil {
 		return
 	}
@@ -140,12 +140,13 @@ func (c Calculator) assign(line string) {
 	variable := elems[0].Value
 	value := elems[2].Value
 
-	if reflect.TypeOf(value).Kind() == reflect.String {
+	if fmt.Sprintf("%T", value) == "string" {
 		value = c.getVarValue(value.(string))
 		if value == nil {
 			return
 		}
 	}
+
 	c.memory[variable.(string)] = value.(int)
 	return
 }
@@ -178,7 +179,6 @@ func getOperationType(line string) OperationType {
 func validateExpression(line string) bool {
 	var number, end int
 	var varName string
-	var valid = true
 
 	// First check if the expression is a single number or a single variable
 	if isNumeric(line) || isAlpha(line) {
@@ -207,17 +207,15 @@ func validateExpression(line string) bool {
 
 	// If none of the above checks are true, then we perform the final check,
 	// We proceed to validate the syntax of the expression:
-	valid = validateSyntax(line, end, number, valid, varName)
-	return valid
+	return validateSyntax(line, end, number, varName)
 }
 
 // validateSyntax validates the syntax of the expression and checks for special edge cases
-func validateSyntax(line string, end int, number any, valid bool, varName string) bool {
+func validateSyntax(line string, end int, number any, varName string) bool {
 	var prevSym string
 
 	// validateSyntax checks if the expression has any "Invalid identifiers" like a2a or a1 = 8
 	// And other edge cases like test = 2n or test = n2
-Loop:
 	for len(line) > 0 {
 		token := string(line[0])
 		switch {
@@ -230,34 +228,28 @@ Loop:
 			number, end = parseNumber(line)
 			if number == nil && prevSym == "=" { // Validates cases like test = 2n
 				fmt.Println("Invalid assignment")
-				valid = false
-				break Loop
+				return false
 			}
 
-			if varName == "" { // Validates cases like 5 = 5, or 100 = 20
-				if number != nil && prevSym == "=" {
-					fmt.Println("Invalid assignment")
-					valid = false
-					break Loop
-				}
+			if varName == "" && number != nil && prevSym == "=" { // Validates cases like 5 = 5, or 100 = 20
+				fmt.Println("Invalid assignment")
+				return false
 			}
 		case isAlpha(token):
 			varName, end = parseVariable(line)
 			if varName == "" && prevSym == "=" { // Validates cases like test = a2a
 				fmt.Println("Invalid assignment")
-				valid = false
-				break Loop
+				return false
 			}
 
 			if varName == "" { // Validates cases like a2a or n22 or a1 = 8
 				fmt.Println("Invalid identifier")
-				valid = false
-				break Loop
+				return false
 			}
 		}
 		line = line[end:]
 	}
-	return valid
+	return true
 }
 
 func parseNumber(line string) (any, int) {
@@ -340,7 +332,7 @@ func (c Calculator) processLine(line string) {
 			end = 1
 		case isNumeric(token):
 			number, end = parseNumber(line)
-			c.expression = append(c.expression, Expression{Number, number.(int)})
+			c.expression = append(c.expression, Expression{Number, number})
 		case isSign(token):
 			sign, end = parseSign(line)
 			c.expression = append(c.expression, Expression{Symbol, sign})
@@ -350,7 +342,7 @@ func (c Calculator) processLine(line string) {
 			if varValue == nil {
 				return
 			}
-			c.expression = append(c.expression, Expression{Number, varValue.(int)})
+			c.expression = append(c.expression, Expression{Number, varValue})
 		default:
 			return
 		}
