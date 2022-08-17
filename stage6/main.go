@@ -5,10 +5,7 @@ package main
 -------------------------------------------------------------------------------
 [Maps](https://hyperskill.org/learn/topic/1824)
 [Operations with maps](https://hyperskill.org/learn/topic/1850)
-[Introduction to Regexp package](https://hyperskill.org/learn/step/19844)
 [Methods](https://hyperskill.org/learn/topic/1928)
-[Anonymous functions] -- TODO!
-[Goto and labels](https://hyperskill.org/learn/step/20238)
 */
 
 import (
@@ -256,15 +253,16 @@ func parseNumber(line string) (any, int) {
 	var stringNum string
 	var end, number int
 
-	for _, token := range line {
-		if isAlpha(string(token)) {
+	for _, t := range line {
+		token := string(t)
+		if isAlpha(token) {
 			return nil, 0
 		}
 
-		if !isNumeric(string(token)) {
+		if !isNumeric(token) {
 			break
 		}
-		stringNum += string(token)
+		stringNum += token
 	}
 	end = len(stringNum)
 

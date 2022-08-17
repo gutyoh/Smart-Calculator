@@ -1,7 +1,5 @@
 type: edu
 custom_name: stage7
 files:
-- name: tests_original.py
-  visible: false
 - name: main.go
   visible: true

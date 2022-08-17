@@ -10,6 +10,7 @@ package main
 [Errors](https://hyperskill.org/learn/topic/1795)
 [Operations with strings](https://hyperskill.org/learn/topic/2023)
 [Parsing data from strings](https://hyperskill.org/learn/topic/1955)
+[Type conversion and overflow](https://hyperskill.org/learn/step/18710)
 */
 
 import (

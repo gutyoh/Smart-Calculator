@@ -86,16 +86,15 @@ func validateExpression(line string) bool {
 }
 
 func parseNumber(line string) (int, int) {
-	var (
-		stringNum   string
-		end, number int
-	)
+	var stringNum string
+	var end, number int
 
-	for _, token := range line {
-		if !isNumeric(string(token)) {
+	for _, t := range line {
+		token := string(t)
+		if !isNumeric(token) {
 			break
 		}
-		stringNum += string(token)
+		stringNum += token
 	}
 	end = len(stringNum)
 
@@ -108,10 +107,8 @@ func parseNumber(line string) (int, int) {
 }
 
 func parseSign(line string) (string, int) {
-	var (
-		sign string
-		end  int
-	)
+	var sign string
+	var end int
 
 	for _, token := range line {
 		if !isSign(string(token)) {

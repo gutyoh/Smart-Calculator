@@ -4,7 +4,6 @@ package main
 [Smart Calculator - Stage 7/7: I've got the power](https://hyperskill.org/projects/74/stages/415/implement)
 -------------------------------------------------------------------------------
 [Stack](https://hyperskill.org/learn/step/5252)
-[Type conversion and overflow](https://hyperskill.org/learn/step/18710)
 [Math package](https://hyperskill.org/learn/topic/2012)
 */
 
@@ -602,35 +601,20 @@ func (c Calculator) getTotal() int {
 			continue
 		}
 		if len(c.stack) > 1 {
-			// Fix this to check for cases like 10-10
-			if a == 0 && b == 0 && token.Value.(string) == "-" {
-				//if minusCount%2 == 0 && tempMinusCount == 0 {
-				//	token.Value = "+"
-				//}
-
-				//if minusCount%2 == 1 && minusCount != 1 {
-				//	token.Value = "+"
-				//}
-
-				if tempMinusCount == 1 && token.Value.(string) == "-" { // -10-10
-					token.Value = "-"
-					tempMinusCount, minusCount = 0, 0
-				}
-
-				//if minusCount == 2 || tempMinusCount != 0 && token.Value.(string) == "-" {
-				//	token.Value = "+"
-				//}
+			// The if statements below check for various edge cases, like -10-10, 10 --10 and ---10--12--8:
+			if tempMinusCount == 1 && (a == 0 && b == 0) && token.Value == "-" { // -10-10
+				minusCount, tempMinusCount = 0, 0
 			}
 
 			if minusCount%2 == 0 && minusCount != 0 { // 10 -- 10
 				token.Value = "+"
 			}
 
-			if tempMinusCount%2 == 1 && token.Value.(string) == "-" { // ---10--12--8
+			if tempMinusCount%2 == 1 && token.Value == "-" { // ---10--12--8
 				token.Value = "+"
 			}
 
-			// Get the two last elements (numbers) of the stack
+			// Get and "pop"/remove the two last elements (numbers) from the stack
 			b, a = pop(&c.stack).Value.(int), pop(&c.stack).Value.(int)
 
 			// Perform the math operation according to the 'token' and push the result to the stack

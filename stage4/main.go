@@ -6,6 +6,7 @@ package main
 [Slice expressions](https://hyperskill.org/learn/topic/2207)
 [Functions](https://hyperskill.org/learn/topic/1750)
 [Function decomposition](https://hyperskill.org/learn/topic/1893)
+[Topic about Unicode package] -- TODO!
 */
 
 import (
