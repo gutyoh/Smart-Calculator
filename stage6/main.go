@@ -5,6 +5,7 @@ package main
 -------------------------------------------------------------------------------
 [Maps](https://hyperskill.org/learn/topic/1824)
 [Operations with maps](https://hyperskill.org/learn/topic/1850)
+[Single Responsibility Principle](https://hyperskill.org/learn/step/8963)
 [Methods](https://hyperskill.org/learn/topic/1928)
 */
 

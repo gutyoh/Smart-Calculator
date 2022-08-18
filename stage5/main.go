@@ -4,9 +4,6 @@ package main
 [Smart Calculator - Stage 5/7: Error!](https://hyperskill.org/projects/74/stages/413/implement)
 -------------------------------------------------------------------------------
 [String search](https://hyperskill.org/learn/topic/2063)
-[Structs](https://hyperskill.org/learn/topic/1891)
-[Public and private scopes](https://hyperskill.org/learn/topic/1894)
-[Type casting and type switching] -- TODO!
 */
 
 import (

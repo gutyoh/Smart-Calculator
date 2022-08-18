@@ -4,6 +4,7 @@ package main
 [Smart Calculator - Stage 2/7: 2+2+](https://hyperskill.org/projects/74/stages/410/implement)
 -------------------------------------------------------------------------------
 [Slices](https://hyperskill.org/learn/topic/1672)
+[Slice expressions](https://hyperskill.org/learn/topic/2207)
 [Control statements](https://hyperskill.org/learn/topic/1728)
 [Loops](https://hyperskill.org/learn/topic/1531)
 [Advanced Input](https://hyperskill.org/learn/topic/2027)

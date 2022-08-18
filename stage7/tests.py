@@ -1,20 +1,161 @@
 from hstest.stage_test import *
-from hstest.test_case import TestCase
+from hstest.test_case import TestCase, SimpleTestCase
 
 
 class CalcTest(StageTest):
     on_exit = False
 
     def generate(self) -> List[TestCase]:
-        return [TestCase(stdin=['/help', self.test_1_1, self.test_1_2, self.test_1_3, self.test_1_4, self.test_1_5,
-                                self.test_1_6, self.test_1_7, self.test_1_9, self.test_1_10, self.test_1_11,
-                                self.test_1_12, self.test_1_13]),
-                TestCase(stdin=['variable = 777 \n Variable', self.test_2_1,
-                                self.test_2_2, self.test_2_3, self.test_2_4]),
-                TestCase(stdin=['8 * (2 + 3', self.test_3_1, self.test_3_2, self.test_3_3, self.test_3_4])]
+        return [
 
-    # test of previous steps' functionality ####################################
-    # help message test
+            ###### Hyperskill original test cases for Stage #7 ######
+
+            TestCase(stdin=['/help', self.test_1_1, self.test_1_2, self.test_1_3, self.test_1_4, self.test_1_5,
+                            self.test_1_6, self.test_1_7, self.test_1_9, self.test_1_10, self.test_1_11,
+                            self.test_1_12, self.test_1_13]),
+            TestCase(stdin=['variable = 777 \n Variable', self.test_2_1,
+                            self.test_2_2, self.test_2_3, self.test_2_4]),
+            TestCase(stdin=['8 * (2 + 3', self.test_3_1, self.test_3_2, self.test_3_3, self.test_3_4]),
+
+            #### Hermann's personal test cases ######
+
+            SimpleTestCase(stdin="10", stdout="10", feedback="aaaa"),
+
+            SimpleTestCase(stdin="-10", stdout="-10", feedback="aaa"),
+
+            SimpleTestCase(stdin="--10", stdout="10", feedback="aaa"),
+
+            SimpleTestCase(stdin="---10", stdout="-10", feedback="aaa"),
+
+            SimpleTestCase(stdin="----10", stdout="10", feedback="aaa"),
+
+            SimpleTestCase(stdin="-----10", stdout="-10", feedback="aaa"),
+
+            ########################################################################
+
+            SimpleTestCase(stdin="+-10", stdout="-10", feedback="aaa"),
+
+            SimpleTestCase(stdin="-+10", stdout="-10", feedback="aaa"),
+
+            SimpleTestCase(stdin="+--10", stdout="10", feedback="aaa"),
+
+            SimpleTestCase(stdin="--+10", stdout="10", feedback="aaa"),
+
+            SimpleTestCase(stdin="++--10", stdout="10", feedback="aaa"),
+
+            SimpleTestCase(stdin="--++10", stdout="10", feedback="aaa"),
+
+            SimpleTestCase(stdin="++---10", stdout="-10", feedback="aaa"),
+
+            SimpleTestCase(stdin="---++10", stdout="-10", feedback="aaa"),
+
+            ########################################################################
+
+            SimpleTestCase(stdin="10-10", stdout="0", feedback="aaa"),
+
+            SimpleTestCase(stdin="-10-10", stdout="-20", feedback="aaa"),
+
+            SimpleTestCase(stdin="10--10", stdout="20", feedback="aaa"),
+
+            SimpleTestCase(stdin="-10-12+8", stdout="-14", feedback="aaa"),
+
+            SimpleTestCase(stdin="-10--12+8", stdout="10", feedback="aaa"),
+
+            SimpleTestCase(stdin="++10++12--8", stdout="30", feedback="aaa"),
+
+            SimpleTestCase(stdin="++10--12--8", stdout="30", feedback="aaa"),
+
+            SimpleTestCase(stdin="---10--12--8", stdout="10", feedback="aaa"),
+
+            SimpleTestCase(stdin="--10--12--8", stdout="30", feedback="aaa"),
+
+            SimpleTestCase(stdin="----10--12--8", stdout="30", feedback="aaa"),
+
+            SimpleTestCase(stdin="-----10--12--8", stdout="10", feedback="aaa"),
+
+            SimpleTestCase(stdin="-10+12-8", stdout="-6", feedback="aaa"),
+
+            SimpleTestCase(stdin="--10+12-8", stdout="14", feedback="aaa"),
+
+            SimpleTestCase(stdin="++10+10", stdout="20", feedback="aaa"),
+
+            SimpleTestCase(stdin="--++10+10", stdout="20", feedback="aaa"),
+
+            SimpleTestCase(stdin="-++10+10", stdout="0", feedback="aaa"),
+
+            SimpleTestCase(stdin="--++10+10", stdout="20", feedback="aaa"),
+
+            SimpleTestCase(stdin="--++10+12-8", stdout="14", feedback="aaa"),
+
+            SimpleTestCase(stdin="--++10+12--8", stdout="30", feedback="aaa"),
+
+            SimpleTestCase(stdin="--++10+12--8-8", stdout="22", feedback="aaa"),
+
+            SimpleTestCase(stdin="--++10+12--8+8", stdout="38", feedback="aaa"),
+
+            SimpleTestCase(stdin="--++10+12--8--8", stdout="38", feedback="aaa"),
+
+            SimpleTestCase(stdin="--++10+12--8--8+8", stdout="46", feedback="aaa"),
+
+            ########################################################################
+
+            SimpleTestCase(stdin="-2 + 4 - 5 + 6", stdout="3", feedback="aaa"),
+
+            SimpleTestCase(stdin="9 +++ 10 -- 8", stdout="27", feedback="aaa"),
+
+            SimpleTestCase(stdin="14       -   12", stdout="2", feedback="aaa"),
+
+            SimpleTestCase(stdin="3 + 5", stdout="8", feedback="aaa"),
+
+            SimpleTestCase(stdin="((10+10)) * 8", stdout="160", feedback="aaa"),
+
+            SimpleTestCase(stdin="7 * 4 / 2 - (3 - 1)", stdout="12", feedback="aaa"),
+
+            SimpleTestCase(stdin="7 * 4 / 2 - (3 - 1) + 5", stdout="17", feedback="aaa"),
+
+            SimpleTestCase(stdin="7 * 4 / 2 - (3 - 1) - 5", stdout="7", feedback="aaa"),
+
+            # SimpleTestCase(stdin="3 + 8 * ((4 + 3) * 2 + 1) - 6 / (2 + 1)", stdout="121", feedback="aaa"),
+
+            SimpleTestCase(stdin="8 * 3 + 12 * (4 - 2)", stdout="48", feedback="aaa"),
+
+            SimpleTestCase(stdin="2 - 2 + 3", stdout="3", feedback="aaa"),
+
+            SimpleTestCase(stdin="a=4\nb=5\nc=6\na*2+b*3+c*(2+3)", stdout="53", feedback="aaa"),
+
+            SimpleTestCase(stdin="a=4\nb=5\nc=6\na*(2+b)*3+(c*(2+3)) - b", stdout="109", feedback="aaa"),
+
+            SimpleTestCase(stdin="1 +++ 2 * 3 -- 4", stdout="11", feedback="aaa"),
+
+            SimpleTestCase(stdin="3 *** 5", stdout="Invalid expression", feedback="aaa"),
+
+            SimpleTestCase(stdin="4 * (2 + 3", stdout="Invalid expression", feedback="aaa"),
+
+            SimpleTestCase(stdin="4+3)", stdout="Invalid expression", feedback="aaa"),
+
+            SimpleTestCase(stdin="/command", stdout="Unknown command", feedback="aaa"),
+
+            ###### TEST CASES FOR THE ^ OPERATOR ######
+
+            SimpleTestCase(stdin="3^3", stdout="27", feedback="aaa"),
+
+            SimpleTestCase(stdin="-3^3", stdout="-27", feedback="aaa"),
+
+            SimpleTestCase(stdin="3^-3", stdout="0", feedback="aaa"),
+
+            SimpleTestCase(stdin="-2^3", stdout="-8", feedback="aaa"),
+
+            SimpleTestCase(stdin="2^2^2", stdout="16", feedback="aaa"),
+
+            SimpleTestCase(stdin="base=5\nexponent=6\nbase^(exponent/2)", stdout="125", feedback="aaa"),
+
+            SimpleTestCase(stdin="a=4\nb=5\nc=6\na*(2+b)*3+(c*(2+3)) - b^2", stdout="89", feedback="aaa"),
+
+            SimpleTestCase(stdin="a=4\nb=5\nc=6\na*(2+b)*3+(c*(2+3)) - b^2^2", stdout="-511", feedback="aaa"),
+
+            SimpleTestCase(stdin="test=4\nfoo=5\nbar=6\ntest*(2+foo)*3+(bar*(2+3)) - foo^2/2", stdout="102", feedback=""),
+        ]
+
     def test_1_1(self, output):
         output = str(output).lower().strip()
         if len(output.split(" ")) < 1:
@@ -185,6 +326,9 @@ class CalcTest(StageTest):
         self.on_exit = True
         return "/exit"
 
+    # def check(self, reply: str, attach) -> CheckResult:
+    #     return CheckResult(reply.strip() == str(attach).strip(), "")
+
     def check(self, reply: str, attach) -> CheckResult:
         if self.on_exit:
             reply = reply.strip().lower().split('\n')
@@ -198,4 +342,10 @@ class CalcTest(StageTest):
 
 
 if __name__ == '__main__':
+    # PRINT PURPLE COLOR AND BOLD
+    print("\033[1;35m")
+
+    print("TEST CASES #1 TO #3 ARE HYPERSKILL'S ORIGINAL TEST CASES")
+    print()
+    print("TEST CASES #4 AND ONWARD ARE HERMANN'S TEST CASES")
     CalcTest("calculator.calculator").run_tests()

@@ -5,6 +5,7 @@ package main
 -------------------------------------------------------------------------------
 [Stack](https://hyperskill.org/learn/step/5252)
 [Math package](https://hyperskill.org/learn/topic/2012)
+[Using stack in Go] -- TODO!
 */
 
 import (
